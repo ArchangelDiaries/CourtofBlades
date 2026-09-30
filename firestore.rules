@@ -1,0 +1,74 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{db}/documents {
+
+    function signedIn() { return request.auth != null; }
+    function tok() { return request.auth.token; }
+
+    // Admin: an ORK account listed in ADMIN_ORK_IDS (admin claim), or the organizer's Google account.
+    function isAdmin() {
+      return signedIn() && (tok().get('admin', false) == true
+        || (tok().get('email', '') == 'antifreke@gmail.com' && tok().get('email_verified', false) == true));
+    }
+
+    function linkPath() { return /databases/$(db)/documents/links/$(request.auth.uid); }
+    function linkedSlug() { return exists(linkPath()) ? get(linkPath()).data.slug : ''; }
+
+    // A Knight owns their entry when their ORK sign-in matched the roster, or an admin linked their account.
+    function ownsSlug(slug) {
+      return signedIn() && (tok().get('knightSlug', '') == slug || linkedSlug() == slug);
+    }
+
+    function str(v, max) { return v is string && v.size() <= max; }
+
+    function validResponse(slug) {
+      let d = request.resource.data;
+      return d.keys().hasOnly(['slug','knight','orkId','uid','known','style','effect','freq','aname','desc','quote','art','ok','status','updatedAt','submittedAt','reviewStatus','adminNotes'])
+        && d.slug == slug
+        && d.uid == request.auth.uid
+        && str(d.knight, 80) && str(d.known, 400) && str(d.style, 40) && str(d.effect, 40) && str(d.freq, 40)
+        && str(d.aname, 40) && str(d.desc, 600) && str(d.quote, 120) && str(d.art, 400)
+        && d.ok is bool
+        && d.status in ['draft', 'submitted']
+        && (d.status == 'draft' || (d.ok == true && d.aname.size() > 0 && d.desc.size() > 0))
+        && d.updatedAt == request.time;
+    }
+
+    match /responses/{slug} {
+      allow read: if isAdmin() || ownsSlug(slug);
+      allow create: if ownsSlug(slug) && validResponse(slug)
+        && !('reviewStatus' in request.resource.data) && !('adminNotes' in request.resource.data);
+      allow update: if isAdmin()
+        || (ownsSlug(slug) && validResponse(slug)
+            && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['reviewStatus', 'adminNotes']));
+      allow delete: if isAdmin();
+    }
+
+    // Public progress board: only whether a Knight has submitted, never what they wrote.
+    match /progress/{slug} {
+      allow read: if true;
+      allow write: if isAdmin()
+        || (ownsSlug(slug) && request.resource.data.keys().hasOnly(['submitted', 'at'])
+            && request.resource.data.submitted is bool && request.resource.data.at == request.time);
+    }
+
+    // Admin links an ORK account to a Knight when the automatic match failed.
+    match /links/{uid} {
+      allow read: if isAdmin() || (signedIn() && request.auth.uid == uid);
+      allow write: if isAdmin();
+    }
+
+    // A signed-in player the roster didn't match asks to be linked.
+    match /requests/{uid} {
+      allow read: if isAdmin() || (signedIn() && request.auth.uid == uid);
+      allow create, update: if signedIn() && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['uid', 'orkId', 'persona', 'claimedSlug', 'note', 'at'])
+        && request.resource.data.uid == uid
+        && str(request.resource.data.persona, 120) && str(request.resource.data.claimedSlug, 80)
+        && str(request.resource.data.note, 300) && request.resource.data.at == request.time;
+      allow delete: if isAdmin();
+    }
+
+    match /{document=**} { allow read, write: if false; }
+  }
+}
