@@ -3,6 +3,16 @@
   publish = "dist"
   functions = "netlify/functions"
 
+# Netlify's smart secret detection flags "AIza..." strings. Those are Firebase's
+# example keys inside node_modules type files, plus this site's own Firebase web
+# API key in dist/, which is public by design (Firestore rules protect the data).
+[build.environment]
+  SECRETS_SCAN_OMIT_PATHS = "node_modules/**"
+  # This site's public Firebase web key, and the placeholder key in Firebase's own type docs.
+  SECRETS_SCAN_SMART_DETECTION_OMIT_VALUES = "AIzaSyDLMovGapK5MU-XlCCgOk1JvzuQFPlCqls,AIzaSyDOCAbC123dEf456GhI789jKl012-MnO"
+  # ADMIN_ORK_IDS is a short public ORK number that also turns up by chance in minified libraries.
+  SECRETS_SCAN_OMIT_KEYS = "ADMIN_ORK_IDS"
+
 [functions]
   node_bundler = "esbuild"
 

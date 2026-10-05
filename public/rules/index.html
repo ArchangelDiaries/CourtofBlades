@@ -1,0 +1,941 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style></head><body><title>Court of Blades and Banners</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Grenze+Gotisch:wght@500;700&family=Alegreya:ital,wght@0,400;0,600;0,700;1,400&family=Alegreya+Sans:wght@400;500;700&family=Alegreya+Sans+SC:wght@500;700&display=swap">
+<style>
+/* Layout: a bound rulebook. Sticky contents rail on the left, one reading column of chapters on the right; datasheets and maps break out into cards. */
+:root{
+  --bg:#E9EBE4; --paper:#F6F7F2; --ink:#1C2320; --muted:#58625C; --rule:#C6CABF; --wash:#DDE1D7;
+  --gules:#9C2A2C; --or:#9A7120; --azure:#2B4970; --vert:#3A6848; --flame:#B8531A; --argent:#5F6E79;
+  --display:"Grenze Gotisch","UnifrakturCook",Georgia,serif;
+  --body:"Alegreya",Georgia,"Times New Roman",serif;
+  --sans:"Alegreya Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --sc:"Alegreya Sans SC","Alegreya Sans",system-ui,sans-serif;
+  --measure:40rem;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#111513; --paper:#181D1A; --ink:#E4E7DF; --muted:#9BA49D; --rule:#323A35; --wash:#20272300;
+  --wash:#212823; --gules:#D8585C; --or:#D8AA4E; --azure:#86A7D8; --vert:#7FB28E; --flame:#EA8A4E; --argent:#A8B4BD;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111513; --paper:#181D1A; --ink:#E4E7DF; --muted:#9BA49D; --rule:#323A35;
+  --wash:#212823; --gules:#D8585C; --or:#D8AA4E; --azure:#86A7D8; --vert:#7FB28E; --flame:#EA8A4E; --argent:#A8B4BD;
+  color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:1.075rem;line-height:1.6;margin:0}
+a{color:var(--gules);text-underline-offset:3px}
+a:focus-visible,button:focus-visible,summary:focus-visible{outline:2px solid var(--or);outline-offset:3px}
+.book{display:grid;grid-template-columns:15.5rem minmax(0,1fr);gap:2.5rem;max-width:78rem;margin:0 auto;padding-inline:1.25rem;padding-block:0 4rem}
+@media (max-width:900px){.book{grid-template-columns:minmax(0,1fr);gap:0;padding-inline:1rem}}
+
+/* contents rail */
+.rail{position:sticky;top:env(safe-area-inset-top,0px);align-self:start;max-height:100vh;overflow-y:auto;padding-block:2rem 2rem}
+.rail h2{font-family:var(--sc);font-size:.8rem;letter-spacing:.14em;color:var(--muted);margin:0 0 .75rem;font-weight:700}
+.rail ol{list-style:none;margin:0;padding:0;display:grid;gap:.1rem}
+.rail a{display:grid;grid-template-columns:2.1rem 1fr;align-items:baseline;text-decoration:none;color:var(--ink);font-family:var(--sans);font-size:.95rem;padding:.3rem .5rem;border-radius:4px}
+.rail a:hover{background:var(--wash)}
+.rail a span{font-family:var(--sc);color:var(--gules);font-size:.8rem;letter-spacing:.06em}
+.rail details summary{display:none}
+@media (max-width:900px){
+  .rail{position:static;max-height:none;padding-block:1rem 0}
+  .rail details{background:var(--paper);border:1px solid var(--rule);border-radius:6px;padding:.25rem .75rem}
+  .rail details summary{display:block;cursor:pointer;font-family:var(--sc);letter-spacing:.1em;font-size:.9rem;padding:.5rem 0}
+  .rail h2{display:none}
+}
+
+/* cover */
+.cover{padding-block:3.5rem 2.5rem;border-bottom:1px solid var(--rule);display:grid;grid-template-columns:minmax(0,1fr) auto;gap:2rem;align-items:end}
+.cover .kicker{font-family:var(--sc);letter-spacing:.18em;font-size:.85rem;color:var(--gules);margin:0 0 .5rem}
+.cover h1{font-family:var(--display);font-weight:700;font-size:clamp(2.9rem,7vw,5.4rem);line-height:.95;margin:0;letter-spacing:.005em;text-wrap:balance}
+.cover .sub{font-size:1.2rem;color:var(--muted);max-width:34rem;margin:1rem 0 0}
+.cover .meta{display:flex;flex-wrap:wrap;gap:.5rem 1.5rem;margin-top:1.5rem;font-family:var(--sans);font-size:.95rem}
+.cover .meta b{font-family:var(--sc);letter-spacing:.08em;color:var(--muted);font-weight:500;margin-right:.35rem}
+.banners{display:flex;gap:.6rem;align-items:flex-start}
+.banners svg{width:2.6rem;height:auto}
+@media (max-width:640px){.cover{grid-template-columns:1fr}.banners{order:-1}}
+
+/* chapters */
+.chapter{padding-block:3rem 1rem;border-bottom:1px solid var(--rule)}
+.chapter>header{display:grid;grid-template-columns:auto minmax(0,1fr);gap:.25rem 1.25rem;align-items:baseline;margin-bottom:1.5rem}
+.chapter>header .num{font-family:var(--display);font-size:3.2rem;line-height:1;color:var(--gules);grid-row:span 2}
+.chapter>header h2{font-family:var(--display);font-weight:700;font-size:clamp(2rem,4.2vw,2.8rem);line-height:1.05;margin:0;text-wrap:balance}
+.chapter>header p{margin:0;color:var(--muted);max-width:var(--measure)}
+h3{font-family:var(--display);font-weight:500;font-size:1.65rem;line-height:1.15;margin:2.25rem 0 .6rem;text-wrap:balance}
+h4{font-family:var(--sc);font-weight:700;letter-spacing:.09em;font-size:.95rem;margin:1.5rem 0 .4rem;color:var(--gules)}
+p,ul,ol{max-width:var(--measure)}
+.prose ul,.prose ol{padding-left:1.25rem}
+.prose li{margin:.3rem 0}
+.prose li::marker{color:var(--gules)}
+b,strong{font-weight:700}
+.term{font-weight:700}
+
+/* callouts */
+.note{max-width:var(--measure);border:1px solid var(--rule);border-left:4px solid var(--or);background:var(--paper);padding:.9rem 1.1rem;border-radius:0 6px 6px 0;margin:1.25rem 0;font-size:1rem}
+.note .lab{display:block;font-family:var(--sc);letter-spacing:.12em;font-size:.78rem;color:var(--or);font-weight:700;margin-bottom:.2rem}
+.note.lore{border-left-color:var(--vert)}.note.lore .lab{color:var(--vert)}
+.note.ex{border-left-color:var(--azure)}.note.ex .lab{color:var(--azure)}
+.note p{margin:.3rem 0}
+
+/* tables */
+.tw{overflow-x:auto;margin:1rem 0 1.25rem;border:1px solid var(--rule);border-radius:6px;background:var(--paper)}
+table{border-collapse:collapse;width:100%;font-family:var(--sans);font-size:.95rem;font-variant-numeric:tabular-nums}
+th{font-family:var(--sc);font-weight:700;letter-spacing:.07em;font-size:.8rem;text-align:left;color:var(--muted);background:var(--wash);padding:.55rem .7rem;white-space:nowrap}
+td{padding:.5rem .7rem;border-top:1px solid var(--rule);vertical-align:top}
+td.c,th.c{text-align:center}
+td b{font-weight:700}
+tr.grp td{background:var(--wash);font-family:var(--sc);letter-spacing:.08em;font-weight:700;font-size:.85rem}
+
+/* steps */
+.steps{list-style:none;padding:0;margin:1.25rem 0;display:grid;gap:.75rem;max-width:var(--measure);counter-reset:s}
+.steps>li{display:grid;grid-template-columns:2.4rem minmax(0,1fr);gap:.9rem;counter-increment:s}
+.steps>li::before{content:counter(s);font-family:var(--display);font-size:1.6rem;line-height:1.2;color:var(--paper);background:var(--ink);width:2.4rem;height:2.4rem;display:grid;place-items:center;border-radius:50%}
+.steps>li h5{margin:.25rem 0 .1rem;font-family:var(--sans);font-size:1.05rem;font-weight:700}
+.steps>li p{margin:0}
+
+/* turn strip */
+.turn{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:.4rem;margin:1.25rem 0}
+.turn div{background:var(--paper);border:1px solid var(--rule);border-top:4px solid var(--gules);padding:.7rem .75rem;border-radius:0 0 6px 6px}
+.turn div:nth-child(2){border-top-color:var(--vert)}.turn div:nth-child(3){border-top-color:var(--azure)}.turn div:nth-child(4){border-top-color:var(--flame)}.turn div:nth-child(5){border-top-color:var(--or)}
+.turn span{display:block;font-family:var(--sc);font-size:.75rem;letter-spacing:.1em;color:var(--muted)}
+.turn strong{display:block;font-family:var(--display);font-weight:500;font-size:1.35rem;line-height:1.1}
+.turn p{margin:.35rem 0 0;font-size:.88rem;font-family:var(--sans);line-height:1.4}
+@media (max-width:700px){.turn{grid-template-columns:minmax(0,1fr)}}
+
+/* stat strip */
+.stats{display:flex;flex-wrap:wrap;gap:.3rem;margin:.6rem 0}
+.stat{min-width:3.1rem;text-align:center;border:1px solid var(--rule);background:var(--bg);border-radius:4px;padding:.2rem .35rem .25rem}
+.stat i{display:block;font-style:normal;font-family:var(--sc);font-size:.68rem;letter-spacing:.1em;color:var(--muted)}
+.stat b{font-family:var(--sans);font-size:1.1rem;font-variant-numeric:tabular-nums}
+
+/* order cards & datasheets */
+.orders{display:grid;grid-template-columns:repeat(auto-fill,minmax(19rem,1fr));gap:1rem;margin:1.25rem 0}
+.ocard{background:var(--paper);border:1px solid var(--rule);border-radius:8px;overflow:hidden;min-width:0}
+.ocard .band{display:flex;align-items:center;gap:.7rem;padding:.7rem 1rem;background:var(--oc);color:var(--paper)}
+.ocard .band svg{width:1.8rem;height:1.8rem;flex:none}
+.ocard .band h4{margin:0;color:inherit;font-family:var(--display);font-weight:700;font-size:1.45rem;letter-spacing:.01em}
+.ocard .band small{display:block;font-family:var(--sc);letter-spacing:.1em;font-size:.72rem;opacity:.9}
+.ocard .in{padding:.6rem 1rem 1rem}
+.ocard ul{padding-left:1.1rem;margin:.4rem 0 0;font-size:.97rem}
+.ocard li{margin:.35rem 0}
+.o-sword{--oc:var(--argent)}.o-battle{--oc:var(--gules)}.o-crown{--oc:var(--or)}.o-flame{--oc:var(--flame)}.o-serpent{--oc:var(--vert)}
+
+.filters{display:flex;flex-wrap:wrap;gap:.4rem;margin:1rem 0}
+.filters button{font-family:var(--sc);letter-spacing:.08em;font-size:.85rem;border:1px solid var(--rule);background:var(--paper);color:var(--ink);padding:.35rem .8rem;border-radius:999px;cursor:pointer}
+.filters button[aria-pressed="true"]{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.sheets{display:grid;gap:1.25rem;margin:1rem 0}
+.sheet{display:grid;grid-template-columns:11.5rem minmax(0,1fr);background:var(--paper);border:1px solid var(--rule);border-radius:8px;overflow:hidden;border-top:5px solid var(--oc)}
+@media (max-width:600px){.sheet{grid-template-columns:minmax(0,1fr)}}
+.art{position:relative;aspect-ratio:3/4;max-width:100%;margin:.9rem;border:2px dashed var(--rule);border-radius:6px;display:grid;place-items:center;text-align:center;background:var(--bg);color:var(--muted)}
+@media (max-width:600px){.art{max-width:12rem}}
+.art svg{width:3rem;height:3rem;color:var(--oc);opacity:.85}
+.art small{position:absolute;bottom:.5rem;left:.5rem;right:.5rem;font-family:var(--sc);font-size:.66rem;letter-spacing:.1em;line-height:1.3}
+.sheet .body{padding:.9rem 1.1rem 1rem .2rem;min-width:0}
+@media (max-width:600px){.sheet .body{padding:0 1rem 1rem}}
+.sheet .ord{font-family:var(--sc);letter-spacing:.12em;font-size:.78rem;color:var(--oc);font-weight:700}
+.sheet h4{font-family:var(--display);font-weight:700;font-size:1.7rem;color:var(--ink);letter-spacing:0;margin:.05rem 0 .15rem;line-height:1.05}
+.sheet .who{font-family:var(--sans);font-size:.92rem;color:var(--muted);margin:0}
+.sheet .who span+span::before{content:" · "}
+.sheet ul{padding-left:1.1rem;margin:.5rem 0;font-size:.96rem}
+.sheet li{margin:.25rem 0}
+.sheet .foot{display:flex;flex-wrap:wrap;gap:.5rem 1.5rem;align-items:center;border-top:1px solid var(--rule);padding-top:.6rem;margin-top:.6rem;font-family:var(--sans);font-size:.88rem}
+.lives{display:flex;gap:.3rem;align-items:center}
+.lives i{font-style:normal;font-family:var(--sc);letter-spacing:.08em;color:var(--muted);margin-right:.2rem;font-size:.8rem}
+.lives button{width:1.35rem;height:1.55rem;padding:0;border:none;background:none;cursor:pointer;color:var(--oc)}
+.lives button svg{width:100%;height:100%}
+.lives button[aria-pressed="true"] .fill{fill:transparent}
+.tag{font-family:var(--sc);letter-spacing:.06em;font-size:.8rem;color:var(--muted)}
+
+/* field ability cards */
+.fab{display:grid;grid-template-columns:repeat(auto-fill,minmax(17.5rem,1fr));gap:1rem;margin:1rem 0}
+.fcard{background:var(--paper);border:1px solid var(--rule);border-radius:8px;padding:.8rem 1rem 1rem;min-width:0}
+.fcard h4{margin:0 0 .4rem;font-family:var(--display);font-size:1.4rem;font-weight:700;color:var(--ink);letter-spacing:0}
+.fcard dl{margin:0;display:grid;gap:.45rem}
+.fcard dt{font-family:var(--sans);font-weight:700;font-size:.95rem;display:flex;justify-content:space-between;gap:.5rem}
+.fcard dt span{font-family:var(--sc);font-size:.75rem;letter-spacing:.08em;color:var(--paper);background:var(--gules);border-radius:3px;padding:0 .35rem;align-self:center}
+.fcard dd{margin:0;font-size:.93rem;color:var(--ink)}
+
+/* maps */
+.maps{display:grid;grid-template-columns:repeat(auto-fill,minmax(20rem,1fr));gap:1.25rem;margin:1.25rem 0}
+.scn{background:var(--paper);border:1px solid var(--rule);border-radius:8px;padding:1rem;min-width:0}
+.scn .hd{display:flex;flex-wrap:wrap;align-items:baseline;gap:.3rem .6rem}
+.scn .hd .d{font-family:var(--display);font-size:1.8rem;color:var(--gules);line-height:1}
+.scn h4{margin:0;font-family:var(--display);font-weight:700;font-size:1.5rem;color:var(--ink);letter-spacing:0}
+.scn .rv{margin-left:auto;font-family:var(--sc);font-size:.72rem;letter-spacing:.1em;border:1px solid var(--rule);border-radius:999px;padding:.05rem .5rem;color:var(--muted);white-space:nowrap}
+.scn .flav{font-style:italic;color:var(--muted);margin:.25rem 0 .6rem;font-size:.97rem}
+.scn svg.map{width:100%;height:auto;max-width:100%;display:block;margin:.25rem auto .6rem;border-radius:4px}
+.scn ul{padding-left:1.1rem;margin:0;font-size:.95rem}
+.scn li{margin:.3rem 0}
+.map .fld{fill:var(--wash)}.map .edge{fill:none;stroke:var(--rule);stroke-width:.3}
+.map .zA{fill:var(--azure);opacity:.22}.map .zB{fill:var(--gules);opacity:.22}
+.map .ter{fill:var(--vert);opacity:.35}.map .obj{fill:var(--or);stroke:var(--ink);stroke-width:.25}
+.map .riv{fill:var(--azure);opacity:.45}.map .brg{fill:var(--argent)}
+.map .hill{fill:var(--vert);opacity:.3;stroke:var(--vert);stroke-width:.35;stroke-dasharray:1 .6}
+.map text{font-family:var(--sans);font-size:1.9px;fill:var(--ink)}
+.map .lbA{fill:var(--azure);font-weight:700}.map .lbB{fill:var(--gules);font-weight:700}
+.map .arw{stroke:var(--ink);stroke-width:.45;fill:none;stroke-dasharray:1.2 .8}
+.map .flag{fill:var(--gules)}.map .flagA{fill:var(--azure)}
+.map .rel{fill:var(--paper);stroke:var(--or);stroke-width:.45}
+
+/* roster */
+.roster{background:var(--paper);border:1px solid var(--rule);border-radius:8px;padding:1rem 1.1rem;margin:1rem 0;max-width:44rem}
+.roster h4{margin:0 0 .5rem}
+.roster table{font-size:.92rem}
+.roster td:last-child,.roster th:last-child{text-align:right}
+.roster tfoot td{font-weight:700;border-top:2px solid var(--ink)}
+
+/* reference sheet */
+.ref{display:grid;grid-template-columns:repeat(auto-fill,minmax(18rem,1fr));gap:1rem;margin:1rem 0}
+.ref section{overflow-x:auto;background:var(--paper);border:1px solid var(--rule);border-radius:8px;padding:.8rem 1rem;min-width:0}
+.ref h4{margin:0 0 .4rem}
+.ref ol,.ref ul{margin:0;padding-left:1.1rem;font-size:.93rem}
+.ref table{font-size:.88rem}
+.ref td,.ref th{padding:.3rem .45rem}
+
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(17rem,1fr));gap:1rem;max-width:52rem}
+.two>div{min-width:0}
+.colophon{padding-block:2rem;color:var(--muted);font-family:var(--sans);font-size:.9rem}
+.checks{list-style:none;padding:0}
+.checks li::before{content:"☐ ";color:var(--gules)}
+</style>
+
+<div class="book">
+<nav class="rail" aria-label="Contents">
+  <details id="toc" open>
+    <summary>Contents</summary>
+    <h2>Contents</h2>
+    <ol>
+      <li><a href="#quick"><span>I</span>Quick Start</a></li>
+      <li><a href="#basics"><span>II</span>The Basics</a></li>
+      <li><a href="#muster"><span>III</span>Mustering a Warband</a></li>
+      <li><a href="#round"><span>IV</span>The Battle Round</a></li>
+      <li><a href="#attacks"><span>V</span>Attacks and Wounds</a></li>
+      <li><a href="#lives"><span>VI</span>Lives, Generals and Morale</a></li>
+      <li><a href="#terrain"><span>VII</span>Terrain and Cover</a></li>
+      <li><a href="#armory"><span>VIII</span>The Armory</a></li>
+      <li><a href="#troops"><span>IX</span>Troops of the Realm</a></li>
+      <li><a href="#magic"><span>X</span>Magic</a></li>
+      <li><a href="#gear"><span>XI</span>Gear</a></li>
+      <li><a href="#knights"><span>XII</span>Knights of Westmarch</a></li>
+      <li><a href="#paragons"><span>XIII</span>Paragons of Westmarch</a></li>
+      <li><a href="#scenarios"><span>XIV</span>Scenarios</a></li>
+      <li><a href="#ref"><span>XV</span>Reference Sheet</a></li>
+      <li><a href="#notes"><span>A</span>Playtest Notes</a></li>
+    </ol>
+  </details>
+</nav>
+
+<main>
+<header class="cover">
+  <div>
+    <p class="kicker">A skirmish game of the Kingdom of Westmarch</p>
+    <h1>Court of Blades and Banners</h1>
+    <p class="sub">Muster Warriors, Wizards and Healers under the named Knights and Paragons of Westmarch, and fight Amtgard's battlegames on the tabletop, down to the lost limb and the walk back from Nirvana.</p>
+    <div class="meta"><span><a href="/">← Back to the Court of Blades site</a></span><span><a href="/court-of-blades-rulebook.docx">Download the Word version</a></span></div><div class="meta"><span><b>Edition</b>Playtest rules</span><span><b>Players</b>2</span><span><b>Game size</b>500 points</span><span><b>Length</b>6 rounds, about 2 hours</span></div>
+  </div>
+  <div class="banners" aria-hidden="true" id="coverBanners"></div>
+</header>
+
+<!-- I QUICK START -->
+<section class="chapter prose" id="quick">
+  <header><span class="num">I</span><h2>Quick Start</h2><p>Play your first battle in about an hour, using only troops, a single scenario and the core loop. Add Knights, magic and gear once the basics feel familiar.</p></header>
+
+  <h3>What you need</h3>
+  <ul>
+    <li>9–12 miniatures per player on 25–32mm round bases, plus 40mm bases for characters later.</li>
+    <li>A handful of six-sided dice (D6), a tape measure in inches, and a 48" × 48" table with a few pieces of terrain.</li>
+    <li>A few tokens or a spare die per model to track lost limbs and lives.</li>
+  </ul>
+
+  <h3>Your first battle in four steps</h3>
+  <ol class="steps">
+    <li><div><h5>Take a starter warband</h5><p>Each player uses one of the two starter musters below (about 140 points each). No characters, no spells, no gear yet.</p></div></li>
+    <li><div><h5>Set up a Field Battle</h5><p>Place 4 pieces of terrain. Roll off; the winner picks a table edge. Take turns placing one model at a time within 8" of your own edge.</p></div></li>
+    <li><div><h5>Play 4 rounds</h5><p>Each round: roll for priority, then take turns activating one model at a time in the Move, Shoot and Fight phases. The next page shows the loop.</p></div></li>
+    <li><div><h5>Count kill points</h5><p>Score 1 kill point every time you slay an enemy model, including models that come back from Nirvana and fall again. Most kill points wins.</p></div></li>
+  </ol>
+
+  <h3>Starter musters</h3>
+  <div class="two">
+    <div class="roster"><h4>The Wyvern's Spur Line</h4>
+      <div class="tw"><table><thead><tr><th>Models</th><th>Loadout</th><th>Pts</th></tr></thead><tbody>
+      <tr><td>4 Warriors</td><td>Single Short + Shield, light armor (5+ save)</td><td>64</td></tr>
+      <tr><td>3 Archers</td><td>Bow, light armor (6+ save)</td><td>42</td></tr>
+      <tr><td>2 Barbarians</td><td>Great Weapon, light armor (6+ save)</td><td>34</td></tr>
+      </tbody><tfoot><tr><td>9 models</td><td></td><td>140</td></tr></tfoot></table></div>
+    </div>
+    <div class="roster"><h4>The Siar Geata Raiders</h4>
+      <div class="tw"><table><thead><tr><th>Models</th><th>Loadout</th><th>Pts</th></tr></thead><tbody>
+      <tr><td>3 Warriors</td><td>Two-Handed Long, heavy armor (5+ save)</td><td>51</td></tr>
+      <tr><td>2 Barbarians</td><td>Dual Short, light armor (6+ save)</td><td>32</td></tr>
+      <tr><td>2 Archers</td><td>Bow, light armor (6+ save)</td><td>28</td></tr>
+      <tr><td>2 Scouts</td><td>Javelins, light armor (6+ save)</td><td>28</td></tr>
+      </tbody><tfoot><tr><td>9 models</td><td></td><td>139</td></tr></tfoot></table></div>
+    </div>
+  </div>
+
+  <h3>The core loop</h3>
+  <div class="turn" role="list">
+    <div role="listitem"><span>Phase 1</span><strong>Priority</strong><p>Both roll a D6. High roll activates first this round.</p></div>
+    <div role="listitem"><span>Phase 2</span><strong>Move</strong><p>Take turns moving one model up to its M. Touching an enemy is a charge.</p></div>
+    <div role="listitem"><span>Phase 3</span><strong>Shoot</strong><p>Take turns shooting with models that aren't in combat and didn't charge.</p></div>
+    <div role="listitem"><span>Phase 4</span><strong>Fight</strong><p>Resolve each combat. Chargers strike first, then survivors strike back.</p></div>
+    <div role="listitem"><span>Phase 5</span><strong>End</strong><p>Slain models with lives left will return next Move phase.</p></div>
+  </div>
+
+  <h3>Every attack in one breath</h3>
+  <p>Roll a D6 for each Attack on the weapon and hit on its Hit value. Roll to wound by comparing weapon Strength to target Toughness. The target saves on its armor, worsened by the weapon's AP. Each wound that gets through takes a limb (a D6: 1–3 arm, 4–6 leg), unless the wound roll was a natural 6 or the weapon has Damage 2, in which case it is <span class="term">Lethal</span> and the troop falls at once. Most troops have 2 W, so a second limb hit also fells them.</p>
+  <div class="note"><span class="lab">When you're ready for more</span><p>Add one Paragon to each side (Chapter XIII), then magic (Chapter X), then Knights (Chapter XII) and the full 500-point muster (Chapter III). Roll on the scenario table (Chapter XIV) once you've played a Field Battle or two.</p></div>
+</section>
+
+<!-- II BASICS -->
+<section class="chapter prose" id="basics">
+  <header><span class="num">II</span><h2>The Basics</h2><p>Models, profiles, dice and measuring: the conventions every other chapter relies on.</p></header>
+
+  <h3>Models and warbands</h3>
+  <p>Each player commands a <span class="term">warband</span>. Its rank and file are <span class="term">troops</span>, drawn from the twelve Amtgard classes. They are led by <span class="term">characters</span>: <span class="term">Paragons</span>, the masters of a single class, and <span class="term">Knights</span>, the highest honors of the realm. Every character in this game is a named player from the Kingdom of Westmarch.</p>
+  <p>Mount troops on 25–32mm round bases and characters on 40mm bases. Distances are always measured between the closest points of two bases.</p>
+
+  <h3>The profile</h3>
+  <p>Every model has six characteristics. How many attacks it makes, what it needs to hit and how hard it strikes all come from its <em>weapon</em>, not from its profile.</p>
+  <div class="tw"><table><thead><tr><th>Stat</th><th>Name</th><th>What it does</th></tr></thead><tbody>
+    <tr><td><b>Pts</b></td><td>Points</td><td>What the model costs to muster</td></tr>
+    <tr><td><b>M</b></td><td>Movement</td><td>How far it moves each Move phase, in inches</td></tr>
+    <tr><td><b>T</b></td><td>Toughness</td><td>Compared against weapon Strength when rolling to wound</td></tr>
+    <tr><td><b>W</b></td><td>Wounds</td><td>How much punishment it takes before it is slain; each point is a limb or part of one</td></tr>
+    <tr><td><b>Ld</b></td><td>Leadership</td><td>Its nerve, used for morale checks and Leadership tests</td></tr>
+    <tr><td><b>Sv</b></td><td>Armor save</td><td>Bought as armor; the roll needed to shrug off a wound</td></tr>
+  </tbody></table></div>
+
+  <h3>Dice</h3>
+  <ul>
+    <li><span class="term">D6</span> is a six-sided die. <span class="term">D3</span> is a D6 halved, rounding up. <span class="term">2D6</span> is two dice added together. Scenarios are chosen with a <span class="term">D8</span>.</li>
+    <li>A value written as <b>4+</b> means the roll must equal or beat 4.</li>
+    <li><span class="term">Re-rolls:</span> a die can be re-rolled only once. Re-roll before applying modifiers.</li>
+    <li><span class="term">Natural rolls:</span> a natural roll is what the die shows before modifiers. A natural 6 always hits and a natural 1 always misses.</li>
+    <li><span class="term">Roll-offs:</span> both players roll a D6 and the higher roll wins. Re-roll ties.</li>
+  </ul>
+
+  <h3>Measuring</h3>
+  <p>Players may measure any distance at any time. Moves, ranges and auras are all measured in inches from base edge to base edge. A model is <span class="term">within</span> a distance if any part of its base is.</p>
+  <div class="note lore"><span class="lab">From the field</span><p>Everything in this book borrows from real Amtgard play: limbs before lives, the walk to Nirvana, class abilities, Knights of the five orders and the battlegames fought every week in the parks of Westmarch.</p></div>
+</section>
+
+<!-- III MUSTER -->
+<section class="chapter prose" id="muster">
+  <header><span class="num">III</span><h2>Mustering a Warband</h2><p>Before every battle, each player musters a warband and writes it on a roster. Then both players run the pre-battle sequence together.</p></header>
+
+  <h3>The muster</h3>
+  <ol class="steps">
+    <li><div><h5>Agree the size</h5><p>A standard game is <b>500 points</b> per side. For a shorter game, play 300. Up to 30% of your points (150 in a standard game) may be spent on characters, including their upgrades.</p></div></li>
+    <li><div><h5>Choose your characters</h5><p>Pick named Knights and Paragons from Chapters XII and XIII. You may take each Knight order only once, and each named person only once.</p></div></li>
+    <li><div><h5>Equip your characters</h5><p>Choose each character's weapon and armor (free for characters), then spend their upgrade budget on field abilities and gear: up to 25 points for a Paragon, 50 for a Knight. Multi-belted Knights may buy abilities from their other orders here.</p></div></li>
+    <li><div><h5>Muster your troops</h5><p>Spend the rest of your points on troops (Chapter IX). Pay for each troop's weapon and armor, and give any troop one Potion if you like.</p></div></li>
+    <li><div><h5>Fill the spellbooks</h5><p>Every Healer, Druid and Wizard buys spells: 3 Spell Points for troops, 6 for Paragons. Spellbooks cost no army points.</p></div></li>
+    <li><div><h5>Name your General</h5><p>Choose one model to lead. A troop General lasts longest (6 lives); a Knight General hits hardest (4 lives). Losing the General for good tests the whole warband's nerve.</p></div></li>
+    <li><div><h5>Write the roster</h5><p>Record each model, its loadout, its points and its lives. Show your opponent the finished roster before the pre-battle sequence.</p></div></li>
+  </ol>
+
+  <h3>Muster limits</h3>
+  <div class="tw"><table><thead><tr><th>Limit</th><th>Standard (500)</th><th>Skirmish (300)</th></tr></thead><tbody>
+    <tr><td>Characters, with upgrades</td><td>Up to 150 pts</td><td>Up to 90 pts</td></tr>
+    <tr><td>Knights of the same order</td><td>1</td><td>1</td></tr>
+    <tr><td>Each named Knight or Paragon</td><td>1</td><td>1</td></tr>
+    <tr><td>Each Relic</td><td>1</td><td>1</td></tr>
+    <tr><td>Potions per troop</td><td>1</td><td>1</td></tr>
+    <tr><td>Typical warband</td><td>About 20 troops and 2 characters</td><td>About 12 troops and 1 character</td></tr>
+  </tbody></table></div>
+
+  <h3>Example roster</h3>
+  <div class="roster">
+    <h4>The Aegir's Hall Muster · 500 points</h4>
+    <div class="tw"><table><thead><tr><th>Model</th><th>Loadout and upgrades</th><th>Pts</th></tr></thead><tbody>
+      <tr class="grp"><td colspan="3">Characters · 138 of 150</td></tr>
+      <tr><td>Sir Zyax Blackraven<br><span class="tag">Knight of the Sword</span></td><td>Dual Short, plate · Masterwork Weapon, Healing Potion</td><td>83</td></tr>
+      <tr><td>Porkins <b>(General)</b><br><span class="tag">Paragon Healer</span></td><td>Single Short + Shield, heavy armor · Deep Reserves</td><td>55</td></tr>
+      <tr class="grp"><td colspan="3">Troops · 362</td></tr>
+      <tr><td>8 Warriors</td><td>Single Short + Shield, heavy armor</td><td>136</td></tr>
+      <tr><td>3 Barbarians</td><td>Great Weapon, light armor</td><td>51</td></tr>
+      <tr><td>4 Archers</td><td>Bow, light armor</td><td>56</td></tr>
+      <tr><td>2 Scouts</td><td>Javelins, light armor</td><td>28</td></tr>
+      <tr><td>2 Healers</td><td>Single Short + Shield, heavy armor</td><td>38</td></tr>
+      <tr><td>1 Paladin</td><td>Two-Handed Long, heavy armor, Potion of Stoneskin</td><td>24</td></tr>
+      <tr><td>1 Wizard</td><td>Single Short, no armor</td><td>15</td></tr>
+      <tr><td>1 Monk</td><td>Spear (staff), no armor</td><td>14</td></tr>
+    </tbody><tfoot><tr><td>24 models</td><td></td><td>500</td></tr></tfoot></table></div>
+  </div>
+
+  <h3>The pre-battle sequence</h3>
+  <ol class="steps">
+    <li><div><h5>Choose a scenario</h5><p>Roll a D8 on the scenario table (Chapter XIV), or agree on one.</p></div></li>
+    <li><div><h5>Set the field</h5><p>Take turns placing 4–6 pieces of terrain, each more than 3" from the others, unless the scenario says otherwise.</p></div></li>
+    <li><div><h5>Pick edges</h5><p>Roll off. The winner chooses a table edge; the other player takes the opposite edge.</p></div></li>
+    <li><div><h5>Deploy</h5><p>Starting with the roll-off winner, take turns placing one model at a time within 8" of your own edge. Models held in reserve (such as Ambush) are set aside.</p></div></li>
+    <li><div><h5>Before the first round</h5><p>Resolve pre-game abilities: Forward Scout moves, Masterwork upgrades and anything else marked "before the game". Then begin round 1.</p></div></li>
+  </ol>
+</section>
+
+<!-- IV ROUND -->
+<section class="chapter prose" id="round">
+  <header><span class="num">IV</span><h2>The Battle Round</h2><p>A game lasts 6 rounds. Players take turns activating one model at a time inside each phase, so neither army acts all at once.</p></header>
+
+  <div class="turn" role="list">
+    <div role="listitem"><span>Phase 1</span><strong>Priority</strong><p>Roll a D6 each. High roll has priority.</p></div>
+    <div role="listitem"><span>Phase 2</span><strong>Move</strong><p>Alternate moves, charges and fall-backs.</p></div>
+    <div role="listitem"><span>Phase 3</span><strong>Shoot</strong><p>Alternate shooting and spellcasting.</p></div>
+    <div role="listitem"><span>Phase 4</span><strong>Fight</strong><p>Alternate choosing combats to resolve.</p></div>
+    <div role="listitem"><span>Phase 5</span><strong>End</strong><p>Score, test morale, tidy effects.</p></div>
+  </div>
+
+  <h3>Priority</h3>
+  <p>Both players roll a D6. The higher roll has priority for the round and activates first in every phase. On a tie, priority passes to the player who did not have it last round. In round 1, roll off.</p>
+
+  <h3>Activations</h3>
+  <ul>
+    <li>In the Move, Shoot and Fight phases, players alternate, starting with the priority player. Each <span class="term">activation</span> is one model taking its action for that phase.</li>
+    <li>When one player has no models left to activate, the other activates the rest of theirs one after another.</li>
+    <li>"Its next activation" means the model's next action in any phase.</li>
+  </ul>
+
+  <h3>Heroic Actions</h3>
+  <p>At the start of the Move, Shoot or Fight phase, a character may declare a <span class="term">Heroic Action</span>. That character and up to 3 friendly troops within 3" act first in that phase, before the priority player. Knights have 2 Heroic Actions per game and Paragons have 1. If both players declare one in the same phase, roll off to see whose heroes go first.</p>
+
+  <h3>The Move phase</h3>
+  <ul>
+    <li><span class="term">Moving:</span> a model may move up to its M in any direction. It can't move through other models or within 1" of an enemy unless it is charging.</li>
+    <li><span class="term">Charging:</span> a model that can see an enemy within its M may move into base contact with it. It has charged this round. A model with a lost leg can't charge, and no model can charge across an obstacle.</li>
+    <li><span class="term">Engaged:</span> a model in base contact with an enemy is engaged. Engaged models may only stay where they are or fall back.</li>
+    <li><span class="term">Falling back:</span> an engaged model may move up to its M directly away from every enemy it touches. It can't shoot, cast or charge for the rest of the round.</li>
+    <li><span class="term">Returning models:</span> models coming back from Nirvana are placed at the start of the phase, before the first activation (Chapter VI).</li>
+  </ul>
+
+  <h3>The Shoot phase</h3>
+  <ul>
+    <li>Each model that is not engaged and did not charge or fall back may make one ranged attack or cast one spell.</li>
+    <li>The target must be within the weapon's range and visible to the shooter (Chapter VII). Engaged enemies can't be targeted by ranged attacks.</li>
+    <li>Casting follows the magic rules in Chapter X.</li>
+  </ul>
+
+  <h3>The Fight phase</h3>
+  <ul>
+    <li>A <span class="term">combat</span> is a group of engaged models touching one another. The priority player picks the first combat to resolve, then players alternate.</li>
+    <li>Inside a combat, models that charged this round strike first. Then the surviving models of the other side strike back. If no one charged, the priority player's models strike first.</li>
+    <li>Each model attacks with its melee weapon. Split its Attacks among enemies it touches, or among enemies within 2" if its weapon has Reach, before rolling.</li>
+    <li>A model slain before it strikes does not strike.</li>
+  </ul>
+
+  <h3>The End phase</h3>
+  <p>Score Victory Points as the scenario says, take any morale check caused this round (Chapter VI), and end effects that last "until the end of the round".</p>
+</section>
+
+<!-- V ATTACKS -->
+<section class="chapter prose" id="attacks">
+  <header><span class="num">V</span><h2>Attacks and Wounds</h2><p>Ranged and melee attacks use the same five steps. A wound takes a limb before it takes a life.</p></header>
+
+  <h3>Making an attack</h3>
+  <ol class="steps">
+    <li><div><h5>Roll to hit</h5><p>Roll one D6 per Attack on the weapon. Each roll that equals or beats the weapon's Hit value is a hit.</p></div></li>
+    <li><div><h5>Roll to wound</h5><p>For each hit, compare the weapon's Strength with the target's Toughness on the wound chart. Set aside any natural 6s.</p></div></li>
+    <li><div><h5>Armor save</h5><p>The target rolls its Sv for each wound, worsened by the weapon's AP. A roll of 1 always fails.</p></div></li>
+    <li><div><h5>Ward save</h5><p>If the armor save fails, a model with a ward rolls it. AP never affects wards.</p></div></li>
+    <li><div><h5>Limb or Lethal</h5><p>Each wound that gets through is a limb hit or a Lethal hit.</p></div></li>
+  </ol>
+
+  <div class="two">
+    <div>
+      <h4>Wound chart</h4>
+      <div class="tw"><table><thead><tr><th>Weapon S vs target T</th><th class="c">Wound on</th></tr></thead><tbody>
+      <tr><td>S is double T or more</td><td class="c">2+</td></tr>
+      <tr><td>S higher than T</td><td class="c">3+</td></tr>
+      <tr><td>S equal to T</td><td class="c">4+</td></tr>
+      <tr><td>S lower than T</td><td class="c">5+</td></tr>
+      <tr><td>S half of T or less</td><td class="c">6+</td></tr>
+      </tbody></table></div>
+    </div>
+    <div>
+      <h4>Hit modifiers</h4>
+      <p>A natural 6 always hits and a natural 1 always misses. All penalties to hit together (cover, a failed morale check, Cloak of Shadows, Suppression Arrow and so on) can never total worse than <b>-2</b>.</p>
+    </div>
+  </div>
+
+  <h3>Limb and Lethal hits</h3>
+  <p>As in Amtgard, most blows take an arm or a leg. Only a natural 6 to wound, or a heavy weapon, strikes the body.</p>
+  <div class="tw"><table><thead><tr><th>Result</th><th>When</th><th>Effect</th></tr></thead><tbody>
+    <tr><td><b>Limb hit</b></td><td>Any wound that is not Lethal</td><td>Lose 1 W, then roll a D6: <b>1–3 arm</b>, <b>4–6 leg</b></td></tr>
+    <tr><td><b>Arm lost</b></td><td>Limb roll of 1–3</td><td>No shield and no two-handed weapons (Two-Handed Long, Great Weapon, Spear, Bow). Other weapons get -1 A (minimum 1). With no usable weapon, fight as a Single Short with A1</td></tr>
+    <tr><td><b>Leg lost</b></td><td>Limb roll of 4–6</td><td>M becomes 2" and the model can't charge</td></tr>
+    <tr><td><b>Lethal hit</b></td><td>Natural 6 to wound, or any wound from a D2+ weapon</td><td>A troop is slain outright. A character loses W equal to the weapon's D + 1</td></tr>
+  </tbody></table></div>
+  <ul>
+    <li>A hit to a limb that is already lost costs the W but has no extra effect.</li>
+    <li>Some rules make wound rolls of 5+ or 4+ Lethal. These never stack: use the best one.</li>
+    <li>A model is <span class="term">slain</span> when its W reaches 0 and goes to Nirvana (Chapter VI).</li>
+    <li><span class="term">Healing:</span> each W restored also restores one lost limb, chosen by the healing player.</li>
+    <li><span class="term">Mortal wounds</span> skip armor and ward saves and count as limb hits, unless the rule calls them Lethal.</li>
+  </ul>
+  <div class="note ex"><span class="lab">Example</span><p>A Barbarian with a Great Weapon (A2, Hit 4+, S5, AP -2, D2) strikes a Warrior in heavy armor with a shield (4+ save). It rolls a 4 and a 2: one hit. S5 against T3 wounds on 3+, and it rolls a 3. The Warrior's save becomes 6+ after AP -2 and it rolls a 5. The wound gets through, and because the Great Weapon has D2 it is Lethal. The Warrior goes to Nirvana.</p></div>
+</section>
+
+<!-- VI LIVES -->
+<section class="chapter prose" id="lives">
+  <header><span class="num">VI</span><h2>Lives, Generals and Morale</h2><p>Every model has several lives. The slain walk to Nirvana and return to the fight, until they run out.</p></header>
+
+  <div class="tw" style="max-width:30rem"><table><thead><tr><th>Model</th><th class="c">Revives</th><th class="c">Lives in total</th></tr></thead><tbody>
+    <tr><td>Knight</td><td class="c">3</td><td class="c">4</td></tr>
+    <tr><td>Paragon</td><td class="c">4</td><td class="c">5</td></tr>
+    <tr><td>Troop</td><td class="c">5</td><td class="c">6</td></tr>
+  </tbody></table></div>
+
+  <h3>Nirvana and revives</h3>
+  <ul>
+    <li><span class="term">Nirvana:</span> a slain model is removed from the table and set aside in its warband's Nirvana. Mark where it fell.</li>
+    <li><span class="term">Returning:</span> at the start of the next Move phase, each model in Nirvana with revives left spends one and returns within 3" of its own table edge with full W and all limbs. It may move that round but can't shoot or cast.</li>
+    <li><span class="term">Out of lives:</span> a model slain with no revives left is out of the game.</li>
+    <li><span class="term">Resurrection:</span> Resurrect, the Resurrection Scroll, Rekindle and similar effects target a friendly model slain this round. It returns where it fell, or within 1" of the model using the effect, and does not spend a revive.</li>
+    <li><span class="term">No revives:</span> summoned or converted models (Summon Beast, Undead Minion) have none.</li>
+    <li>Models in Nirvana don't count for Presence, Leadership or auras.</li>
+    <li><span class="term">Tracking:</span> keep a die beside each character, and tally troop lives on the roster. Each datasheet in Chapter XII has a lives track you can tap.</li>
+  </ul>
+
+  <h3>The General</h3>
+  <p>During the muster, each player names one model as their <span class="term">General</span>. It may be a Knight, a Paragon or a troop. A General uses the normal revives for its rank.</p>
+
+  <h3>Morale</h3>
+  <ul>
+    <li><span class="term">Army morale check:</span> when the General is out of lives, the warband takes a morale check in that round's End phase. Roll 2D6 against the highest Leadership among your models still on the table. The check passes if the roll is equal to or under that Leadership.</li>
+    <li><span class="term">Failed check:</span> every model in the warband gets -1 to hit for the rest of the game. This counts toward the -2 limit on hit penalties.</li>
+    <li><span class="term">Leadership tests:</span> every other Leadership test works the same way: roll 2D6 and pass on a roll equal to or under the model's Ld.</li>
+  </ul>
+</section>
+
+<!-- VII TERRAIN -->
+<section class="chapter prose" id="terrain">
+  <header><span class="num">VII</span><h2>Terrain and Cover</h2><p>Shooting into cover is -1 to hit. Cover never affects melee.</p></header>
+
+  <h3>Line of sight</h3>
+  <p>Check from the model's own point of view. A shooter must be able to see at least part of the target. Impassable terrain blocks line of sight completely.</p>
+
+  <h3>Cover</h3>
+  <ul>
+    <li><span class="term">In cover:</span> a target is in cover if it is inside area terrain, within 1" behind an obstacle that lies between it and the shooter, or partly hidden by terrain or other models.</li>
+    <li><span class="term">Effect:</span> ranged attacks against a target in cover get -1 to hit. Spellballs get -1 to the cast roll instead.</li>
+    <li><span class="term">High ground:</span> a shooter on a hill ignores cover from obstacles, but not from area terrain.</li>
+  </ul>
+
+  <h3>Terrain types</h3>
+  <div class="tw"><table><thead><tr><th>Terrain</th><th>Examples</th><th>Cover</th><th>Movement</th></tr></thead><tbody>
+    <tr><td><b>Open ground</b></td><td>Fields, hills</td><td>No</td><td>Normal</td></tr>
+    <tr><td><b>Area terrain</b></td><td>Woods, ruins, tall grass</td><td>For models inside it</td><td>Normal</td></tr>
+    <tr><td><b>Obstacles</b></td><td>Walls, hedges, fences, barricades</td><td>For models within 1" behind it</td><td>Crossing costs 2"; can't charge across</td></tr>
+    <tr><td><b>Difficult ground</b></td><td>Rubble, bog, shallow water</td><td>No</td><td>Half M</td></tr>
+    <tr><td><b>Impassable</b></td><td>Cliffs, deep water, solid buildings</td><td>Blocks line of sight</td><td>Can't enter</td></tr>
+  </tbody></table></div>
+  <p><span class="term">Hills:</span> a model that charges onto a hill from lower ground does not strike first that round.</p>
+</section>
+
+<!-- VIII ARMORY -->
+<section class="chapter prose" id="armory">
+  <header><span class="num">VIII</span><h2>The Armory</h2><p>The weapon you carry decides how often you strike, what you need to hit and how hard you land. Armor is bought piece by piece, in the manner of The Old World.</p></header>
+
+  <h3>Weapons</h3>
+  <p>Each model carries one weapon loadout. Troops pay the listed cost; Knights and Paragons take any loadout free.</p>
+  <div class="tw"><table><thead><tr><th>Weapon</th><th class="c">A</th><th class="c">Hit</th><th class="c">S</th><th class="c">AP</th><th class="c">D</th><th>Special</th><th>Cost</th></tr></thead><tbody>
+    <tr><td><b>Single Short</b></td><td class="c">3</td><td class="c">3+</td><td class="c">3</td><td class="c">0</td><td class="c">1</td><td>—</td><td>Free</td></tr>
+    <tr><td><b>Single Short + Shield</b></td><td class="c">2</td><td class="c">3+</td><td class="c">3</td><td class="c">0</td><td class="c">1</td><td>Shield: +1 armor save</td><td>+2</td></tr>
+    <tr><td><b>Dual Short</b> (florentine)</td><td class="c">4</td><td class="c">4+</td><td class="c">3</td><td class="c">0</td><td class="c">1</td><td>—</td><td>+2</td></tr>
+    <tr><td><b>Two-Handed Long</b></td><td class="c">2</td><td class="c">4+</td><td class="c">4</td><td class="c">-1</td><td class="c">1</td><td>Reach 2"</td><td>+2</td></tr>
+    <tr><td><b>Great Weapon</b></td><td class="c">2</td><td class="c">4+</td><td class="c">5</td><td class="c">-2</td><td class="c">2</td><td>Shieldbreaker</td><td>+3</td></tr>
+    <tr><td><b>Spear</b></td><td class="c">2</td><td class="c">4+</td><td class="c">4</td><td class="c">0</td><td class="c">1</td><td>Reach 2"; +1 to hit in a round it charges or is charged</td><td>+2</td></tr>
+    <tr><td><b>Flail</b></td><td class="c">3</td><td class="c">4+</td><td class="c">4</td><td class="c">0</td><td class="c">1</td><td>Wrap</td><td>+3</td></tr>
+    <tr><td><b>Bow</b></td><td class="c">2</td><td class="c">3+</td><td class="c">3</td><td class="c">-1</td><td class="c">1</td><td>Range 24"</td><td>Archers only</td></tr>
+    <tr><td><b>Javelins</b></td><td class="c">1</td><td class="c">4+</td><td class="c">4</td><td class="c">-1</td><td class="c">1</td><td>Range 8"</td><td>+2</td></tr>
+  </tbody></table></div>
+  <h4>Weapon rules</h4>
+  <ul>
+    <li><span class="term">Reach 2":</span> the model may strike enemies up to 2" away as well as those in base contact.</li>
+    <li><span class="term">Shieldbreaker:</span> the target gets no shield bonus to its save.</li>
+    <li><span class="term">Wrap:</span> a flail's chain wraps around shields, so the target gets no shield bonus.</li>
+    <li><span class="term">Damage 2:</span> every wound from this weapon is Lethal (Chapter V).</li>
+  </ul>
+
+  <h3>Armor</h3>
+  <div class="two">
+    <div class="tw"><table><thead><tr><th>Armor</th><th class="c">Save</th><th>Cost</th></tr></thead><tbody>
+      <tr><td>None</td><td class="c">—</td><td>Free</td></tr>
+      <tr><td>Light</td><td class="c">6+</td><td>+2</td></tr>
+      <tr><td>Heavy</td><td class="c">5+</td><td>+3</td></tr>
+      <tr><td>Plate (characters only)</td><td class="c">4+</td><td>Included</td></tr>
+      <tr><td>Shield</td><td class="c">+1</td><td>With the weapon</td></tr>
+    </tbody></table></div>
+    <div>
+      <ul>
+        <li>A shield improves body armor by 1, or gives a 6+ save on its own. Heavy armor and a shield make a 4+ save.</li>
+        <li>AP worsens the save: AP -2 turns a 4+ into a 6+.</li>
+        <li>No armor save can be better than 2+.</li>
+      </ul>
+    </div>
+  </div>
+  <h4>Armor Damage</h4>
+  <p>When a model wearing body armor fails an armor save, its armor becomes <span class="term">Damaged</span>: worsen its save by 1 for the rest of the game (heavy 5+ becomes 6+; light 6+ becomes no save). Shields are never Damaged. The Warrior's Restore Armor ability, the Mend spell and an Armorer's Kit restore Damaged armor.</p>
+</section>
+
+<!-- IX TROOPS -->
+<section class="chapter prose" id="troops">
+  <header><span class="num">IX</span><h2>Troops of the Realm</h2><p>Twelve classes make up the rank and file. Each costs 10–15 points before gear and brings one class ability.</p></header>
+  <p>Base cost includes a Single Short and no armor. Add weapon and armor costs from Chapter VIII. Sv comes from the armor bought.</p>
+  <div class="tw"><table><thead><tr><th>Troop</th><th class="c">Pts</th><th class="c">M</th><th class="c">T</th><th class="c">W</th><th class="c">Ld</th><th>Weapons</th><th>Armor</th><th>Class ability</th></tr></thead><tbody id="troopRows"></tbody></table></div>
+
+  <h3>Class abilities</h3>
+  <div class="fab" id="classAbilities"></div>
+  <div class="note ex"><span class="lab">Costing a troop</span><p>A Warrior with a Great Weapon and heavy armor costs 12 + 3 + 3 = 18 points.</p></div>
+</section>
+
+<!-- X MAGIC -->
+<section class="chapter prose" id="magic">
+  <header><span class="num">X</span><h2>Magic</h2><p>Every caster uses one system: buy a spellbook before the battle, then roll one die to cast.</p></header>
+  <p>Healers, Druids and Wizards, and their Paragons, are <span class="term">Spellcasters</span>, each with its own list.</p>
+  <ol class="steps">
+    <li><div><h5>Spellbook</h5><p>During the muster, a troop caster spends 3 Spell Points (SP) and a Paragon caster spends 6. Each spell bought gives one use per game; buy a spell again for more uses.</p></div></li>
+    <li><div><h5>Casting</h5><p>In its Shoot activation, instead of attacking, a caster may cast one spell at a target in range and line of sight. Touch means within 1".</p></div></li>
+    <li><div><h5>Cast roll</h5><p>Roll a D6. Equal or beat the Cast value and the spell works, spending the use. Fail and nothing happens, but the use is kept. A natural 1 is a <span class="term">fizzle</span>: nothing happens and the use is spent.</p></div></li>
+    <li><div><h5>Spellballs</h5><p>A successful cast counts as a hit. Roll to wound and save as normal with the spell's profile.</p></div></li>
+    <li><div><h5>Engaged casters</h5><p>An engaged caster may cast only Touch or Self spells, in its Fight activation instead of attacking.</p></div></li>
+  </ol>
+  <div id="spellLists"></div>
+</section>
+
+<!-- XI GEAR -->
+<section class="chapter prose" id="gear">
+  <header><span class="num">XI</span><h2>Gear</h2><p>Weapons, Armor, Relics and Potions. Characters buy gear from their upgrade budget; any troop may carry one Potion.</p></header>
+  <ul>
+    <li>A model may take each piece of gear only once.</li>
+    <li>Relics are unique: one of each per warband.</li>
+    <li>Weapon gear upgrades the model's existing weapon. Armor gear stacks with the armor it already wears.</li>
+    <li>Each Potion is used once, in the drinker's activation, on itself or a friendly model within 1".</li>
+  </ul>
+  <div id="gearLists"></div>
+</section>
+
+<!-- XII KNIGHTS -->
+<section class="chapter prose" id="knights">
+  <header><span class="num">XII</span><h2>Knights of Westmarch</h2><p>Knights are the champions of the realm: 75 points each, with an upgrade budget of 50. Every Knight on the field is a named Knight of Westmarch.</p></header>
+
+  <h3>Heroic</h3>
+  <p>Knights and Paragons are <span class="term">Heroic</span>: +1 Attack with any weapon, the weapon's Hit value improves by 1 (best 2+), and they take weapons and armor at no cost.</p>
+
+  <h3>The five orders</h3>
+  <div class="orders" id="orderCards"></div>
+
+  <h3>Named Knights</h3>
+  <ul>
+    <li><span class="term">Fielded order:</span> a named Knight uses the profile and abilities of the order they are listed under.</li>
+    <li><span class="term">Unique:</span> each named Knight may appear once per warband, and the one-Knight-per-order limit still applies.</li>
+    <li><span class="term">Multi-belted:</span> for +10 points per other order they hold, a Knight gains one ability from each of those orders. Sir Monkey, listed under Sword and belted in Crown, Flame and Serpent, could cost up to 105 points.</li>
+    <li><span class="term">Field abilities:</span> a Knight buys field abilities from the list of any class they are a Paragon of. A Knight with no Paragonship picks one class list.</li>
+  </ul>
+  <p>The roster holds 29 Knights. The core 17 are the four most senior Knights of each order by belting date (Westmarch has one Knight of Battle). Eleven more join because they also hold Paragonships, and Dame Wendy the Wench rides with the Serpent. Each is listed under their earliest knighthood. Source: <a href="https://ork.amtgard.com/orkui/index.php?Route=Reports/knights_list&amp;KingdomId=21">ORK Knights list</a>.</p>
+
+  <h3>Datasheets</h3>
+  <p>Each Knight has a datasheet with a 3:4 frame for their player template graphic. Tap a shield on the lives track to mark a life spent; the marks stay in this browser only.</p>
+  <div class="filters" role="group" aria-label="Filter by order" id="kFilters"></div>
+  <div class="sheets" id="knightSheets"></div>
+</section>
+
+<!-- XIII PARAGONS -->
+<section class="chapter prose" id="paragons">
+  <header><span class="num">XIII</span><h2>Paragons of Westmarch</h2><p>Paragons are the masters of a single class: 50 points each, with an upgrade budget of 25.</p></header>
+
+  <h3>The Paragon profile</h3>
+  <p>A Paragon uses its class's troop profile with these changes:</p>
+  <div class="stats" aria-label="Paragon profile changes"><div class="stat"><i>Pts</i><b>50</b></div><div class="stat"><i>M</i><b>Class</b></div><div class="stat"><i>T</i><b>4</b></div><div class="stat"><i>W</i><b>5</b></div><div class="stat"><i>Ld</i><b>8</b></div><div class="stat"><i>Sv</i><b>Armor</b></div></div>
+  <ul>
+    <li>Heroic, plus its class ability from Chapter IX.</li>
+    <li>Any weapon and armor its class may use, free. A Paragon whose class can wear heavy armor may take plate instead.</li>
+    <li>Paragon casters spend 6 Spell Points on their spellbook.</li>
+    <li>Up to 25 points of field abilities from its own class list, and gear.</li>
+  </ul>
+
+  <h3>Upgrade budgets</h3>
+  <div class="tw"><table><thead><tr><th>Character</th><th class="c">Base</th><th class="c">Budget</th><th class="c">Most it can cost</th><th>Field abilities from</th></tr></thead><tbody>
+    <tr><td><b>Paragon</b></td><td class="c">50</td><td class="c">25</td><td class="c">75</td><td>Its own class list</td></tr>
+    <tr><td><b>Knight</b></td><td class="c">75</td><td class="c">50</td><td class="c">125</td><td>Any class they are a Paragon of, or one chosen list</td></tr>
+  </tbody></table></div>
+  <p>Each field ability may be taken once per model. Upgrades count toward the character limit.</p>
+
+  <h3>Field abilities</h3>
+  <p>Each class has four field abilities: two at 5 points, one at 10 and one at 15.</p>
+  <div class="fab" id="fieldAbilities"></div>
+  <div class="note ex"><span class="lab">Example</span><p>Master Duro of the Vale takes Improve Weapon (5), Hardened (10) and a Healing Potion (3), spending 18 of his 25 points. He costs 68.</p></div>
+
+  <h3>Named Paragons</h3>
+  <p>Every Paragon is a named Westmarch player who is not also a Knight. Each class takes up to four, most senior first, with no one listed twice. E.O.N. The Eternal is added as a fifth Monk. Paladin has no Paragon, because the only Paladin Paragon, Ailanthus Finvarra, is a Knight.</p>
+  <div class="tw"><table><thead><tr><th>Class</th><th>Paragon</th><th>Park</th><th class="c">Since</th></tr></thead><tbody id="paragonRows"></tbody></table></div>
+  <p><span class="term">Alternates</span> (their class already has four): Limn Ology and Thomas Throatchop the Bold (Warrior; Limn tied Jimmy Whitehammer on date and the tie went alphabetically); Damia, Dash, Raokan and ToberDam Delargivic (Archer); Skalkeda Dragonslayer and Mask (Assassin); Dragoth Spineclever and Squire Walrus (Monk); Pigeon and Sky (Healer); Dagger (Wizard). Source: <a href="https://ork.amtgard.com/orkui/index.php?Route=Reports/class_masters&amp;KingdomId=21">ORK Class Masters/Paragons</a>.</p>
+</section>
+
+<!-- XIV SCENARIOS -->
+<section class="chapter prose" id="scenarios">
+  <header><span class="num">XIV</span><h2>Scenarios</h2><p>Eight battlegames, most of them fought in Amtgard parks every week. Roll a D8 or agree on one. The player with more Victory Points after round 6 wins.</p></header>
+
+  <h3>Common rules</h3>
+  <ul>
+    <li><span class="term">Table:</span> 48" × 48" with 4–6 pieces of terrain, unless the scenario says otherwise.</li>
+    <li><span class="term">Deployment:</span> within 8" of your own table edge (shaded on each map).</li>
+    <li><span class="term">Objectives and Presence:</span> 40mm markers. You control a marker if you have more Presence within 3" of it. Troops count as 1, Paragons 2, Knights 3. Frozen models and models in Nirvana count as 0.</li>
+    <li><span class="term">Kill points:</span> 1 per enemy troop slain, 3 per Paragon and 5 per Knight, every time a model is slain. Kill points break ties in every scenario.</li>
+    <li><span class="term">Revives:</span> standard in every scenario. In <b>Unlimited</b> scenarios, troops never run out; characters keep their normal count.</li>
+  </ul>
+  <div class="maps" id="scenarioCards"></div>
+</section>
+
+<!-- XV REFERENCE -->
+<section class="chapter prose" id="ref">
+  <header><span class="num">XV</span><h2>Reference Sheet</h2><p>The rules you'll look up most, on one page.</p></header>
+  <div class="ref">
+    <section><h4>The round</h4><ol><li>Priority: D6 each, high roll first</li><li>Move: returning models, then alternate moves and charges</li><li>Shoot: alternate shots and spells</li><li>Fight: alternate picking combats; chargers first</li><li>End: score, morale, end effects</li></ol></section>
+    <section><h4>An attack</h4><ol><li>Hit: D6 per Attack vs weapon Hit</li><li>Wound: S vs T chart</li><li>Save: Sv worsened by AP</li><li>Ward: AP doesn't apply</li><li>Limb (1–3 arm, 4–6 leg) or Lethal</li></ol></section>
+    <section><h4>Wound chart</h4><table><tbody><tr><td>S ≥ 2×T</td><td>2+</td></tr><tr><td>S &gt; T</td><td>3+</td></tr><tr><td>S = T</td><td>4+</td></tr><tr><td>S &lt; T</td><td>5+</td></tr><tr><td>S ≤ ½T</td><td>6+</td></tr></tbody></table></section>
+    <section><h4>Lethal</h4><ul><li>Natural 6 to wound, or any wound from a D2+ weapon</li><li>Troop: slain outright</li><li>Character: lose D + 1 W</li><li>5+/4+ Lethal rules don't stack</li></ul></section>
+    <section><h4>Lives</h4><table><tbody><tr><td>Knight</td><td>3 revives</td></tr><tr><td>Paragon</td><td>4 revives</td></tr><tr><td>Troop</td><td>5 revives</td></tr></tbody></table><p style="margin:.4rem 0 0;font-size:.9rem">Return next Move phase within 3" of your edge. General out of lives: 2D6 ≤ best Ld or -1 to hit.</p></section>
+    <section><h4>Modifiers</h4><ul><li>Cover: -1 to hit (spellballs -1 to cast)</li><li>Natural 6 hits, natural 1 misses</li><li>Hit penalties never worse than -2</li><li>Re-roll a die only once</li></ul></section>
+  </div>
+</section>
+
+<!-- NOTES -->
+<section class="chapter prose" id="notes">
+  <header><span class="num">A</span><h2>Playtest Notes</h2><p>These are the rules most likely to need tuning. Check them first at the table.</p></header>
+  <ul>
+    <li><span class="term">Character limit vs. upgrades:</span> a fully equipped Knight costs 125, leaving 25 of the 150-point limit, which is not enough for a Paragon. Consider raising the limit to 40% (200 points).</li>
+    <li><span class="term">Knight cost:</span> 75 points is about five troops for a champion-level model. If Knights dominate, tighten the character limit before raising their cost.</li>
+    <li><span class="term">Knight of the Sword:</span> Heroic plus Bladesong gives 6 attacks with Dual Short, hitting on 3+ and Lethal on 5+ to wound.</li>
+    <li><span class="term">Battle Knight aura:</span> with about 22 models on the table, a 6" aura reaches many of them. Fallbacks: a 3" radius, or a limit of 3 models.</li>
+    <li><span class="term">Warband size:</span> about 22 models per side is closer to Warcry or Mordheim than Kill Team. Play 300 points for a smaller game.</li>
+    <li><span class="term">Lethal thresholds:</span> damage boosts are written as "wound rolls of 5+ are Lethal" rather than +1 D, since +1 D on a D1 weapon would make every wound Lethal. Watch whether 5+ Lethal on Barbarians is still too strong.</li>
+    <li><span class="term">Lives and game length:</span> with 4–6 lives per model, few warbands will be wiped out in 6 rounds. Objectives and kill points decide most games.</li>
+    <li><span class="term">Named characters:</span> the Knights and Paragons are real Westmarch players. Get their blessing before sharing the game widely.</li>
+  </ul>
+  <h3>Still to write</h3>
+  <ul class="checks">
+    <li>Signature abilities: let each named Knight write a personal ability of their own</li>
+    <li>A castle or keep siege scenario, with gates, walls and towers</li>
+  </ul>
+  <p class="colophon">Court of Blades and Banners · playtest rules · built for the Kingdom of Westmarch. Knight and Paragon rosters drawn from the Amtgard Online Record Keeper.</p>
+</section>
+</main>
+</div>
+
+<script>
+(function(){
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+
+const ICON={
+ sword:'<path d="M11 2h2l.6 12h-3.2z"/><rect x="6.5" y="14" width="11" height="2" rx="1"/><rect x="11" y="16" width="2" height="4"/><circle cx="12" cy="21.3" r="1.4"/>',
+ battle:'<path fill-rule="evenodd" d="M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5zM11 6h2v5h4v2h-4v6h-2v-6H7v-2h4z"/>',
+ crown:'<path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 10H5z"/><rect x="5" y="19" width="14" height="2"/>',
+ flame:'<path d="M12 2c1 4 6 6 6 12a6 6 0 0 1-12 0c0-3 2-5 3-7 0 2 1 3 2 3 0-3-1-5 1-8z"/>',
+ serpent:'<path d="M16 4c-3-2-8-1-8 3s8 3 8 8-5 6-9 4" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><circle cx="16.5" cy="4.5" r="1.8"/>'
+};
+const icon=(k,cls)=>`<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"${cls?` class="${cls}"`:""}>${ICON[k]}</svg>`;
+
+const ORDERS={
+ sword:{name:"Knight of the Sword",short:"Sword",role:"Duelist",M:'6"',T:4,W:6,Ld:9,Sv:"4+",Ward:"5+",armor:"Plate",abil:[
+  ["Bladesong","With a Single Short, Dual Short or Two-Handed Long weapon, gain an extra +1 Attack, and wound rolls of 5+ are Lethal."],
+  ["Master of the Blade","Each enemy melee hit roll that fails against this model deals 1 mortal wound to the attacker."],
+  ["Sworn Duel","At the start of combat, name one engaged enemy. The two may only attack each other this round, and the Knight re-rolls wound rolls against that model."]]},
+ battle:{name:"Battle Knight",short:"Battle",role:"Line anchor",M:'5"',T:5,W:7,Ld:9,Sv:"3+",Ward:"—",armor:"Plate and shield",abil:[
+  ["Battle Aura (6\")","At the start of each round, choose a stance. Shieldwall: friendly models within 6\" get +1 Toughness. Warcry: friendly models within 6\" get +1 Strength on melee weapons."],
+  ["Anvil of the Line","An enemy must pass a Leadership test to fall back from combat with this model."]]},
+ crown:{name:"Knight of the Crown",short:"Crown",role:"Commander",M:'5"',T:4,W:6,Ld:10,Sv:"4+",Ward:"—",armor:"Plate",abil:[
+  ["Voice of the Realm","Friendly models within 9\" use this Knight's Leadership."],
+  ["Royal Command","After this Knight activates, one friendly model within 9\" may activate immediately."],
+  ["Decree","Once per game: for one round, all friendly models re-roll failed hit rolls."]]},
+ flame:{name:"Knight of the Flame",short:"Flame",role:"Protector",M:'5"',T:4,W:6,Ld:9,Sv:"4+",Ward:"—",armor:"Plate",abil:[
+  ["Oath of Service","When a friendly model within 3\" would lose a wound, roll a D6. On a 2+, this Knight takes it instead as a mortal wound."],
+  ["Eternal Flame (6\")","Friendly models within 6\" ignore a lost wound on a roll of 6."],
+  ["Rekindle","Once per game: return one friendly troop slain this round within 3\" of this Knight, with 1 W. It spends no revive."]]},
+ serpent:{name:"Knight of the Serpent",short:"Serpent",role:"Artisan and trickster",M:'6"',T:4,W:5,Ld:9,Sv:"5+",Ward:"5+",armor:"Heavy armor",abil:[
+  ["Masterwork","Before the game, choose up to 3 friendly troops. Each upgrades its weapon with +1 AP or re-rolls wound rolls of 1."],
+  ["Serpent's Guile","Once per round, force one enemy within 12\" to re-roll a successful hit roll or save."],
+  ["Tapestry of Glory","Friendly models within 6\" get +1 Leadership."]]}
+};
+
+const KNIGHTS=[
+ ["sword","Sir Zyax Blackraven","Aegir's Hall",1985,"","Anti-Paladin"],
+ ["sword","Ashe Arala","Ethereal Hollow",1999,"Crown","Assassin, Barbarian, Healer"],
+ ["sword","Sir Monkey","Wavehaven",2011,"Crown, Flame, Serpent","Archer, Bard"],
+ ["sword","Deimos","Seven Sleeping Dragons",2018,"Crown, Flame","Warrior"],
+ ["battle","Aust Valanthe","Quixotic Valley",2025,"","Bard, Healer, Monster"],
+ ["crown","Castings Uhn Grimlock Von Cream Puff","Wyvern's Spur",2001,"Flame, Serpent",""],
+ ["crown","Downfall","Siar Geata",2001,"","Anti-Paladin"],
+ ["crown","Scoot","Siar Geata",2021,"","Druid, Scout, Wizard"],
+ ["crown","Azus","Wyvern's Spur",2022,"Serpent",""],
+ ["crown","thistledown notagnome","Wyvern's Spur",2024,"","Archer"],
+ ["flame","Baronet Sir Blackthorn","Crimson Wood",1999,"","Healer, Wizard"],
+ ["flame","Sir Furball","Siar Geata",2014,"",""],
+ ["flame","Leah (SSD)","Seven Sleeping Dragons",2016,"Serpent",""],
+ ["flame","Fiks von Grunwald","Wavehaven",2018,"",""],
+ ["flame","Mikezilla Darkwater","Wavehaven",2022,"","Warrior"],
+ ["flame","Bacchus Springjaw","Clockwork Spires",2024,"","Healer"],
+ ["flame","Clenawe","Thor's Refuge",2025,"","Wizard"],
+ ["flame","Evil Randy","Siar Geata",2026,"","Healer"],
+ ["flame","Milan of Amber","Dragonvale",2026,"","Bard"],
+ ["flame","Sir Rose Thorn 가시 장미","Siar Geata",2026,"Crown","Archer, Bard"],
+ ["flame","Lady Bridget","Wyvern's Spur",2026,"","Color"],
+ ["serpent","Dame Elspeth Sharrisselva","Crimson Wood",1996,"Flame",""],
+ ["serpent","Ailanthus Finvarra","Wyvern's Spur",2003,"Crown","Paladin, Warrior"],
+ ["serpent","Ohlanna De Mowbray, Lady","Thor's Refuge",2021,"Flame",""],
+ ["serpent","Ser Attano Sagax","Thor's Refuge",2022,"","Healer, Monster"],
+ ["serpent","Jacelendrahz","Crimson Wood",2022,"","Assassin"],
+ ["serpent","Dame Wendy the Wench","Siar Geata",2023,"",""],
+ ["serpent","Gravekeeper Sir Spade the Laborious","Ethereal Hollow",2023,"","Wizard"],
+ ["serpent","Halavere Blackraven","Belial Peaks",2023,"","Assassin"]
+];
+
+const TROOPS=[
+ ["Warrior",12,'5"',3,2,6,"Any melee","Light, Heavy","Restore Armor","When this model slays an enemy, its Damaged armor is restored."],
+ ["Barbarian",12,'6"',3,3,6,"Any melee","Light","Cleave","Melee wound rolls of 5+ are Lethal."],
+ ["Archer",12,'5"',3,2,6,"Bow (included), Single Short","Light","Special Arrows","Once per round when shooting, choose one. Pinning Arrow: a model hit can't move in its next activation. Phase Arrow: the hit ignores armor saves (wards still apply)."],
+ ["Scout",10,'7"',3,2,6,"Short weapons, Javelins","Light","Forward Scout","After deployment, move up to 6\", but not within 6\" of an enemy."],
+ ["Assassin",13,'6"',3,2,6,"Single Short, Dual Short, Javelins","Light","Poisoned Blade","Melee wound rolls of 5+ are Lethal."],
+ ["Monk",12,'6"',3,2,7,"Single Short, Spear (staff)","None","Deflect Missiles","4+ ward against ranged attacks and spellballs."],
+ ["Bard",13,'5"',3,2,7,"Single Short, Short + Shield","Light","Inspire","Friendly models within 6\" get +1 Leadership and re-roll failed Leadership tests."],
+ ["Healer",14,'5"',3,2,7,"Single Short, Short + Shield","Light, Heavy","Heal · Spellcaster","Heal: once per round, restore 1 W (and one lost limb) to a friendly model within 1\". Spellcaster: casts from the Divine list."],
+ ["Druid",14,'5"',3,2,7,"Single Short, Spear","Light","Spellcaster","Casts from the Nature list."],
+ ["Wizard",15,'5"',3,2,7,"Single Short","None","Spellcaster","Casts from the Arcane list."],
+ ["Paladin",15,'5"',3,2,8,"Any melee","Light, Heavy","Stalwart","6+ ward."],
+ ["Anti-Paladin",15,'5"',3,2,7,"Any melee","Light, Heavy","Steal Life","When this model slays an enemy in melee, it regains 1 W (up to its starting W)."]
+];
+
+const SPELLS=[
+ ["Arcane","Wizard",[["Lightning Bolt",1,"3+",'18"',"Spellball: S5, AP -2, D2"],["Iceball",1,"3+",'12"',"Target is Frozen until the end of the next round: it can't activate, attack, be attacked or be targeted"],["Fireball",2,"4+",'12"',"Spellball against the target and every other model within 2\" of it: S4, AP -1, D1"],["Teleport",2,"4+","Self","Place the caster anywhere within 12\", not within 1\" of an enemy"]]],
+ ["Nature","Druid",[["Entangle",1,"3+",'12"',"Target can't move or fall back in its next activation"],["Heat Weapon",1,"3+",'12"',"Target's melee weapon has A1 until the end of the next round"],["Mend",1,"2+","Touch","Restore the target's Damaged armor"],["Stoneskin",2,"4+","Touch","Target ignores the next wound it would lose"]]],
+ ["Divine","Healer",[["Greater Heal",1,"2+","Touch","Restore D3 W"],["Protection from Magic",1,"3+","Touch","Target gets a 3+ ward against spells for the rest of the game"],["Sanctuary",1,"3+","Touch","Until the target next activates, it can't attack or be attacked in melee"],["Resurrect",3,"4+","Touch","A friendly troop slain this round returns within 1\" of the caster with 1 W, spending no revive"]]]
+];
+
+const GEAR=[
+ ["Weapons",[["Masterwork Weapon",5,"Re-roll hit rolls of 1"],["Shieldsplitter",5,"Melee weapon gains Shieldbreaker"],["Flameblade",10,"Melee weapon gets +1 S; wound rolls of 6 are AP -3"],["Dragonbone Bow",10,"Bow only: Range 30\" and S4"],["Blade of the Realm",15,"Melee weapon gets an extra -1 AP, and wound rolls of 5+ are Lethal"]]],
+ ["Armor",[["Armorer's Kit",5,"Once per game, restore Damaged armor on this model or a friendly model within 1\""],["Reinforced Armor",5,"The first failed save doesn't Damage this model's armor"],["Cloak of Shadows",10,"-1 to hit this model with ranged attacks and spellballs"],["Enchanted Shield",10,"Shield also gives a 6+ ward, or improves an existing ward by 1"],["Dragonscale Plate",15,"Characters only: plate gives a 3+ save instead of 4+"]]],
+ ["Relics",[["Horn of Rally",5,"Once per game, friendly models within 12\" automatically pass Leadership tests this round"],["Amulet of Warding",10,"The bearer gets a 4+ ward against spells"],["Warband Banner",10,"Friendly models within 6\" of the bearer re-roll failed Leadership tests. If the bearer is slain, the warband gets -1 Leadership. A troop may carry it"],["Resurrection Scroll",15,"Once per game, a friendly troop slain this round returns within 1\" with 1 W, spending no revive"]]],
+ ["Potions",[["Antidote",2,"Remove one spell effect (Frozen, Entangled, Heat Weapon and so on)"],["Potion of Swiftness",2,"+3\" M this activation"],["Healing Potion",3,"Restore D3 W"],["Potion of Strength",3,"+1 S on melee weapons until the end of the round"],["Potion of Stoneskin",4,"Ignore the next wound it would lose"]]]
+];
+
+const FIELD=[
+ ["Warrior",[["Improve Weapon",5,"+1 S on one weapon."],["Improve Shield",5,"The shield gives +2 to the save instead of +1."],["Hardened",10,"Armor is never Damaged."],["Weapon Master",15,"Once per round, re-roll all failed hit rolls for one weapon."]]],
+ ["Paladin",[["Lay on Hands",5,"Once per game, restore D3 W to a friendly model within 1\"."],["Smite",5,"Once per game, melee wound rolls of 5+ are Lethal for one round."],["Aura of Protection",10,"Friendly models within 3\" get a 6+ ward."],["Undying Faith",15,"The first time this model would be slain, it stays with 1 W."]]],
+ ["Barbarian",[["Berserk",5,"+1 A in a round it charges."],["Roar",5,"Once per round, one enemy within 6\" gets -2 Ld until the end of the round."],["Fight After Death",10,"When slain, make one melee attack before removal."],["Rage",15,"While below starting W, +1 S and +1 A."]]],
+ ["Archer",[["Destroy Armor Arrow",5,"Once per round, a hit Damages the target's armor even if it saves."],["Poison Arrow",5,"Once per game, a hit deals 2 mortal wounds instead of normal damage."],["Suppression Arrow",10,"Once per round, a model hit gets -1 to hit until the end of the next round."],["Eagle Eye",15,"Bow range 36\"; ignores negative hit modifiers."]]],
+ ["Scout",[["Tracking",5,"Each round, name an enemy within 18\". Friendly models re-roll hit rolls of 1 against it."],["Shake It Off",5,"Once per game, remove a Pinned, Entangled or Frozen effect from itself."],["Pathfinder",10,"+2\" M and ignores terrain movement penalties."],["Ambush",15,"Start in reserve. At the start of any round, set up within 1\" of a table edge and more than 6\" from enemies, with +1 to hit that round."]]],
+ ["Assassin",[["Poison",5,"Poisoned Blade makes wound rolls of 4+ Lethal."],["Shadowstep",5,"Once per game, move 6\", even out of combat, without penalty."],["Hold Person",10,"Once per game, an enemy within 6\" can't act in its next activation."],["Assassinate",15,"Once per game, one melee attack against a character wounds on 2+ and every wound is Lethal."]]],
+ ["Monk",[["Sanctuary",5,"Once per game, cast Sanctuary on itself automatically."],["Meditate",5,"Once per game, regain D3 W."],["Ancestral Armor",10,"5+ ward."],["Flurry",15,"+2 A with Single Short or Spear."]]],
+ ["Bard",[["Legend",5,"Once per game, one friendly model automatically passes a Leadership test."],["Mimic",5,"Once per game, copy a class ability of a friendly troop within 6\" until the end of the round."],["Awe",10,"Once per round, one enemy within 6\" can't attack this model in its next activation."],["Song of Valor",15,"Friendly models within 6\" get +1 to hit in melee."]]],
+ ["Healer",[["Deep Reserves",5,"+2 Spell Points."],["Cure",5,"Once per round, remove one spell effect from a model within 1\"."],["Protection from Death",10,"Once per game, a friendly model within 6\" that would be slain stays with 1 W."],["Greater Resurrect",15,"Resurrect may target Paragons and returns models with 2 W."]]],
+ ["Druid",[["Deep Reserves",5,"+2 Spell Points."],["Barkskin",5,"+1 T."],["Call Lightning",10,"Add one use of a spell: Cast 4+, 18\", spellball S5 AP -2 D2, no line of sight needed."],["Summon Beast",15,"Add a Beast to the warband: M 8\", T 4, W 3; A3, Hit 3+, S4, AP 0, D1. No revives."]]],
+ ["Wizard",[["Deep Reserves",5,"+2 Spell Points."],["Arcane Focus",5,"+1 to cast rolls for spellballs."],["Cantrip",10,"One 1-SP spell may be cast once per round without spending uses."],["Sphere of Annihilation",15,"Once per game, Cast 5+, 12\": the target suffers D3+1 mortal wounds."]]],
+ ["Anti-Paladin",[["Terror",5,"Enemies within 3\" get -1 to hit this model in melee."],["Innate Poison",5,"Melee wound rolls of 5+ are Lethal."],["Undead Minion",10,"Once per game, an enemy troop this model slays fights for you with 1 W until slain again, then goes to its owner's Nirvana."],["Unholy Strength",15,"+1 S and +1 A in melee."]]]
+];
+
+const PARAGONS=[
+ ["Warrior","Lord General Tevas the Holy","Wavehaven",2008],["Warrior","Era","Wyvern's Spur",2015],["Warrior","Master Duro of the Vale","Stonehearth",2017],["Warrior","Jimmy Whitehammer","Wyvern's Spur",2024],
+ ["Barbarian","Baernoir","Crimson Wood",2007],["Barbarian","Collin MacAbee","Stonehearth",2014],["Barbarian","Fenra","Crimson Wood",2023],
+ ["Archer","Eldrin Dawnrider","Stonehearth",2019],["Archer","Nightshade","Clockwork Spires",2020],["Archer","Valen Blackthorn","Ashen Grove",2023],["Archer","Aries 'The Mad' Trucido","Belial Peaks",2023],
+ ["Scout","Lord Paragon Fayt Horizon","Clockwork Spires",2015],["Scout","TooDelz","Stonehearth",2020],["Scout","Sebastion","Wyvern's Spur",2023],["Scout","Super Ninja","Wyvern's Spur",2026],
+ ["Assassin","Thedro","Aegir's Hall",1996],["Assassin","Abbazabba","Anduril",2000],["Assassin","Aelelia Undine","Thor's Refuge",2015],["Assassin","Fun Size","Wavehaven",2016],
+ ["Monk","Nodule","Wavehaven",1998],["Monk","Lekvar","Wyvern's Spur",2018],["Monk","Ninja Raider","Stonehearth",2019],["Monk","Brujah","Fal Dare",2021],["Monk","E.O.N. The Eternal","Siar Geata",2026],
+ ["Bard","Endol Aethiem","Wyvern's Spur",2016],["Bard","Silent Judge","Thor's Refuge",2019],["Bard","Feste(s)","Wyvern's Spur",2024],
+ ["Healer","Porkins","Stonehearth",2011],["Healer","Aella","Crimson Wood",2015],["Healer","Delu Maethor","Wyvern's Spur",2024],["Healer","Fenroc Everscale","Fal Dare",2025],
+ ["Druid","Kalandra Mirdain","Aegir's Hall",2013],["Druid","Lothar Bloodeye","Dragonvale",2020],["Druid","Maul Sablehammer","Aegir's Hall",2020],["Druid","Dargon Ravenskull","Thor's Refuge",2021],
+ ["Wizard","Dandril Valekrel","Wavehaven",2008],["Wizard","Lord Paragon Caliban Acklie","Aegir's Hall",2016],["Wizard","Spark","Wyvern's Spur",2019],["Wizard","Lee","Wyvern's Spur",2024],
+ ["Anti-Paladin","Link Dragonrider","Clockwork Spires",2026]
+];
+
+/* ---------- maps (units are inches; 48 x 48 table) ---------- */
+const svgMap=(inner,w=48,h=48)=>`<svg class="map" viewBox="-1 -1 ${w+2} ${h+2}" role="img">${`<rect class="fld" x="0" y="0" width="${w}" height="${h}"/>`}${inner}<rect class="edge" x="0" y="0" width="${w}" height="${h}"/></svg>`;
+const zones=(w=48,h=48,d=8)=>`<rect class="zA" x="0" y="${h-d}" width="${w}" height="${d}"/><rect class="zB" x="0" y="0" width="${w}" height="${d}"/><text class="lbB" x="1.2" y="2.6">Player B edge</text><text class="lbA" x="1.2" y="${h-1}">Player A edge</text>`;
+const obj=(x,y,l)=>`<circle class="obj" cx="${x}" cy="${y}" r="1.1"/>${l?`<text x="${x+1.6}" y="${y+.7}">${l}</text>`:""}`;
+const ter=`<rect class="ter" x="6" y="18" width="7" height="5" rx="1.5"/><rect class="ter" x="35" y="25" width="7" height="5" rx="1.5"/><rect class="ter" x="20" y="12" width="3" height="3" rx=".5"/><rect class="ter" x="25" y="33" width="3" height="3" rx=".5"/>`;
+const flag=(x,y,c)=>`<path class="${c}" d="M${x} ${y-2.6}v3.6" stroke="currentColor" stroke-width=".3"/><path class="${c}" d="M${x} ${y-2.6}h2.4l-.8 .9.8 .9H${x}z"/>`;
+
+const SCN=[
+ {d:1,name:"Field Battle",rv:"Standard",flav:"An open-field clash, line against line.",map:svgMap(zones()+ter),rules:[
+  ["Setup","Standard."],["Scoring","Kill points only."],["Special","A warband with no models left on the table or in Nirvana (all out of lives) loses immediately."]]},
+ {d:2,name:"Hold the Ground",rv:"Standard",flav:"Banners are planted across the field, and both sides fight to hold them.",map:svgMap(zones()+obj(24,24,"Center")+obj(15.5,15.5)+obj(32.5,15.5)+obj(15.5,32.5)+obj(32.5,32.5)),rules:[
+  ["Setup","Five objectives: one in the center and four placed 12\" from the center toward each corner."],["Scoring","From round 2, in each End phase, score 1 VP per objective you control and 1 extra VP for the center."]]},
+ {d:3,name:"King of the Hill",rv:"Unlimited",flav:"One hill, and whoever holds it rules the field.",map:svgMap(zones()+`<circle class="hill" cx="24" cy="24" r="5"/><text x="20.4" y="24.7">The hill</text>`+`<rect class="ter" x="6" y="30" width="6" height="4" rx="1.2"/><rect class="ter" x="36" y="14" width="6" height="4" rx="1.2"/>`),rules:[
+  ["Setup","A hill 10\" across in the center of the table."],["Scoring","In each End phase, the player with more Presence on the hill scores 2 VP (4 VP in round 6). On a tie, no one scores."],["Special","Models charging up the hill don't strike first (the Hills rule)."]]},
+ {d:4,name:"Capture the Flag",rv:"Unlimited",flav:"The Amtgard classic. Steal their flag, protect yours.",map:svgMap(zones()+ter+flag(24,5.2,"flag")+flag(24,44.8,"flagA")+`<path class="arw" d="M26 41 C 34 30, 34 18, 26 7"/>`),rules:[
+  ["Setup","Each player places a flag 4\" from their own edge, centered."],["Taking the flag","A model that ends a Move activation in base contact with the enemy flag picks it up. The carrier gets -2\" M and can't shoot or cast."],["Dropping it","If the carrier is slain, the flag drops where it stood. A model that ends a Move activation touching its own dropped flag returns it to its starting spot."],["Scoring","3 VP when your carrier ends a Move activation touching your own flag at its starting spot. The captured flag then resets. The game ends at once if a player makes 2 captures."]]},
+ {d:5,name:"Bridge Battle",rv:"Standard",flav:"A river splits the field, and the bridges are the only easy way across.",map:svgMap(zones()+`<rect class="riv" x="0" y="21" width="48" height="6"/><rect class="brg" x="10" y="20" width="4" height="8"/><rect class="brg" x="34" y="20" width="4" height="8"/>`+obj(12,24)+obj(36,24)+`<text x="19" y="24.7">River, 6" wide</text>`),rules:[
+  ["Setup","A river 6\" wide runs across the center, parallel to the deployment edges. Two bridges 4\" wide sit 12\" from each side edge, each with an objective at its center."],["River","Models wading in the river have M 2\", can't charge, and get -1 to hit."],["Scoring","In each End phase, 1 VP per bridge you control, plus kill points at the end of the game."]]},
+ {d:6,name:"Escort the Monarch",rv:"Standard; Monarch none",flav:"One side must get its Monarch across the field alive. The other must stop it.",map:svgMap(`<rect class="zB" x="0" y="0" width="48" height="24"/><rect class="zA" x="0" y="40" width="48" height="8"/><text class="lbB" x="1.2" y="2.6">Defender deploys anywhere in this half</text><text class="lbA" x="1.2" y="47">Attacker edge</text>`+`<path class="arw" d="M24 42 L24 4"/><path d="M22.6 5.6 L24 3 L25.4 5.6z" fill="currentColor"/><circle class="obj" cx="24" cy="43" r="1.3"/><text x="26" y="43.7">Monarch</text>`+`<rect class="ter" x="8" y="26" width="7" height="5" rx="1.5"/><rect class="ter" x="33" y="28" width="7" height="5" rx="1.5"/>`),rules:[
+  ["Setup","Roll off. The winner is the Attacker and names one of their characters as the Monarch. The Defender deploys first, anywhere in their half."],["Winning","The Attacker wins if the Monarch moves off the Defender's table edge. The Defender wins if the Monarch is slain. Otherwise the game is a draw."],["Special","The Monarch can't use Heroic Actions and has no revives, even if it is the General."]]},
+ {d:7,name:"The Ditch",rv:"Unlimited",flav:"Two lines meet in a narrow lane, and the fallen rejoin the back of the line.",map:`<svg class="map" viewBox="-17 -1 50 50" role="img"><rect class="fld" x="0" y="0" width="16" height="48"/><rect class="zB" x="0" y="0" width="16" height="6"/><rect class="zA" x="0" y="42" width="16" height="6"/><rect class="edge" x="0" y="0" width="16" height="48"/><text class="lbB" x="17" y="3.6">Player B</text><text class="lbA" x="17" y="46">Player A</text><text x="17" y="24.6">16" × 48" lane</text></svg>`,rules:[
+  ["Setup","Play on a 16\" × 48\" lane with no terrain. Deploy within 6\" of your short edge."],["Scoring","Kill points only, counting every kill, including repeat kills of the same model."],["Special","Returning models are placed touching their own short edge."]]},
+ {d:8,name:"Relic Hunt",rv:"Standard",flav:"Lost relics lie scattered across the field, and not all of them are what they seem.",map:svgMap(zones()+ter+[[14,13],[33,11],[24,21],[11,30],[30,31],[38,20]].map(p=>`<rect class="rel" x="${p[0]-1}" y="${p[1]-1}" width="2" height="2" transform="rotate(45 ${p[0]} ${p[1]})"/>`).join("")),rules:[
+  ["Setup","After deployment, players take turns placing 6 relic markers, each more than 8\" from any table edge and 6\" from other relics."],["Picking up","A model that ends a Move activation touching a relic picks it up and rolls a D6. 1: a trap; the model takes a limb hit and the relic is removed. 2–5: a relic worth 2 VP. 6: a Great Relic worth 3 VP."],["Carrying","A model can carry one relic. If the carrier is slain, the relic drops where it stood."],["Scoring","A relic scores when its carrier ends a Move activation within 8\" of its own edge. The relic is then removed."]]}
+];
+
+/* ---------- render ---------- */
+// cover banners
+$("#coverBanners").innerHTML=["sword","battle","crown","flame","serpent"].map((k,i)=>`<svg viewBox="0 0 40 ${86+(i%2?10:0)}" class="o-${k}" style="color:var(--paper)"><rect x="0" y="0" width="40" height="3" rx="1" fill="var(--ink)"/><path d="M3 3h34v${70+(i%2?10:0)}l-17-11-17 11z" fill="var(--oc)"/><g transform="translate(8,${16+(i%2?4:0)})">${`<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">${ICON[k]}</svg>`}</g></svg>`).join("");
+
+// troops
+$("#troopRows").innerHTML=TROOPS.map(t=>`<tr><td><b>${t[0]}</b></td><td class="c">${t[1]}</td><td class="c">${t[2]}</td><td class="c">${t[3]}</td><td class="c">${t[4]}</td><td class="c">${t[5]}</td><td>${esc(t[6])}</td><td>${t[7]}</td><td>${t[8]}</td></tr>`).join("");
+$("#classAbilities").innerHTML=TROOPS.map(t=>`<div class="fcard"><h4>${t[0]}</h4><dl><dt>${esc(t[8])}</dt><dd>${esc(t[9])}</dd></dl></div>`).join("");
+
+// spells
+$("#spellLists").innerHTML=SPELLS.map(([n,c,rows])=>`<h3>${n} <span class="tag">· ${c}</span></h3><div class="tw"><table><thead><tr><th>Spell</th><th class="c">SP</th><th class="c">Cast</th><th>Range</th><th>Effect</th></tr></thead><tbody>${rows.map(r=>`<tr><td><b>${r[0]}</b></td><td class="c">${r[1]}</td><td class="c">${r[2]}</td><td>${r[3]}</td><td>${esc(r[4])}</td></tr>`).join("")}</tbody></table></div>`).join("");
+
+// gear
+$("#gearLists").innerHTML=GEAR.map(([n,rows])=>`<h3>${n}</h3><div class="tw"><table><thead><tr><th>${n.replace(/s$/,"")}</th><th class="c">Pts</th><th>Effect</th></tr></thead><tbody>${rows.map(r=>`<tr><td><b>${esc(r[0])}</b></td><td class="c">${r[1]}</td><td>${esc(r[2])}</td></tr>`).join("")}</tbody></table></div>`).join("");
+
+// order cards
+const statStrip=o=>`<div class="stats"><div class="stat"><i>Pts</i><b>75</b></div><div class="stat"><i>M</i><b>${o.M}</b></div><div class="stat"><i>T</i><b>${o.T}</b></div><div class="stat"><i>W</i><b>${o.W}</b></div><div class="stat"><i>Ld</i><b>${o.Ld}</b></div><div class="stat"><i>Sv</i><b>${o.Sv}</b></div><div class="stat"><i>Ward</i><b>${o.Ward}</b></div></div>`;
+$("#orderCards").innerHTML=Object.entries(ORDERS).map(([k,o])=>`<article class="ocard o-${k}"><div class="band">${icon(k)}<div><h4>${o.name}</h4><small>${o.role} · ${o.armor}</small></div></div><div class="in">${statStrip(o)}<ul>${o.abil.map(a=>`<li><b>${esc(a[0])}:</b> ${esc(a[1])}</li>`).join("")}</ul></div></article>`).join("");
+
+// knight datasheets
+const slug=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+const shield='<svg viewBox="0 0 20 24" aria-hidden="true"><path class="fill" d="M10 1.5l7.5 2.8v6.6c0 5.6-3.7 9.6-7.5 11.6-3.8-2-7.5-6-7.5-11.6V4.3z" fill="currentColor" stroke="currentColor" stroke-width="1.6"/></svg>';
+$("#knightSheets").innerHTML=KNIGHTS.map(([k,name,park,yr,also,para])=>{
+  const o=ORDERS[k], id=slug(name);
+  const extra=[also?`<span><b>Also belted:</b> ${esc(also)}</span>`:"",para?`<span><b>Paragon of:</b> ${esc(para)}</span>`:`<span><b>Field abilities:</b> one chosen class list</span>`].join("");
+  return `<article class="sheet o-${k}" data-order="${k}" id="knight-${id}">
+   <div class="art" aria-label="Space for ${esc(name)}'s player template graphic">${icon(k)}<small>Player template graphic<br>3 : 4</small></div>
+   <div class="body">
+     <div class="ord">${o.name}</div>
+     <h4>${esc(name)}</h4>
+     <p class="who"><span>${esc(park)}</span><span>Belted ${yr}</span><span>${o.role}</span></p>
+     ${statStrip(o)}
+     <ul>${o.abil.map(a=>`<li><b>${esc(a[0])}:</b> ${esc(a[1])}</li>`).join("")}<li><b>Heroic:</b> +1 Attack, Hit improves by 1, weapons and armor free. 2 Heroic Actions per game.</li></ul>
+     <div class="foot">${extra}<span class="lives" data-k="${id}"><i>Lives</i>${[0,1,2,3].map(n=>`<button type="button" data-n="${n}" aria-pressed="false" aria-label="Life ${n+1} of 4">${shield}</button>`).join("")}</span></div>
+   </div></article>`;}).join("");
+document.querySelectorAll(".lives").forEach(el=>{
+  const key="cbb-lives-"+el.dataset.k;
+  const paint=spent=>el.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",String(+b.dataset.n<spent)));
+  paint(+(store.get(key)||0));
+  el.addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const n=+b.dataset.n;const cur=+(store.get(key)||0);const next=(n<cur)?n:n+1;store.set(key,next);paint(next);});
+});
+// filters
+const fk=["all","sword","battle","crown","flame","serpent"];
+$("#kFilters").innerHTML=fk.map(k=>`<button type="button" data-f="${k}" aria-pressed="${k==="all"}">${k==="all"?"All 28":ORDERS[k].short+" · "+KNIGHTS.filter(x=>x[0]===k).length}</button>`).join("");
+$("#kFilters").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const f=b.dataset.f;
+  document.querySelectorAll("#kFilters button").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));
+  document.querySelectorAll(".sheet").forEach(s=>{s.hidden=!(f==="all"||s.dataset.order===f)});});
+
+// field abilities
+$("#fieldAbilities").innerHTML=FIELD.map(([c,rows])=>`<div class="fcard"><h4>${c}</h4><dl>${rows.map(r=>`<dt>${esc(r[0])}<span>${r[1]} pts</span></dt><dd>${esc(r[2])}</dd>`).join("")}</dl></div>`).join("");
+
+// paragons
+let last="";
+$("#paragonRows").innerHTML=PARAGONS.map(p=>{const first=p[0]!==last;last=p[0];return `<tr><td>${first?`<b>${p[0]}</b>`:""}</td><td>${esc(p[1])}</td><td>${esc(p[2])}</td><td class="c">${p[3]}</td></tr>`}).join("");
+
+// scenarios
+$("#scenarioCards").innerHTML=SCN.map(s=>`<article class="scn" id="scn-${s.d}"><div class="hd"><span class="d">${s.d}</span><h4>${s.name}</h4><span class="rv">Revives: ${s.rv}</span></div><p class="flav">${s.flav}</p>${s.map.replace('role="img"',`role="img" aria-label="Table map for ${s.name}"`)}<ul>${s.rules.map(r=>`<li><b>${r[0]}:</b> ${esc(r[1])}</li>`).join("")}</ul></article>`).join("");
+
+// collapse contents on phones
+if(window.matchMedia("(max-width:900px)").matches){$("#toc").open=false}
+})();
+</script>
+</body></html>

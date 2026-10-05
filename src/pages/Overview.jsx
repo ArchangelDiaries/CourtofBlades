@@ -6,7 +6,7 @@ import ROSTER from "../../shared/knights.js";
 export default function Overview() {
   const done = useProgress();
   const count = Object.keys(done).filter((s) => ROSTER.some((k) => k.slug === s)).length;
-  const rulebook = import.meta.env.VITE_RULEBOOK_URL;
+  const rulebook = import.meta.env.VITE_RULEBOOK_URL || "/rules/";
   return (
     <>
       <p className="kicker">In production · Kingdom of Westmarch</p>
@@ -14,7 +14,8 @@ export default function Overview() {
       <p className="lede">A tabletop skirmish game of Amtgard. Muster Warriors, Wizards and Healers under the named Knights and Paragons of Westmarch, and fight the battlegames you know from the park, down to the lost limb and the walk back from Nirvana.</p>
       <div className="row" style={{ marginTop: "1.5rem" }}>
         <Link className="btn" to="/ability">Knights: submit your ability</Link>
-        {rulebook && <a className="btn ghost" href={rulebook} target="_blank" rel="noreferrer">Read the playtest rules</a>}
+        <a className="btn ghost" href={rulebook}>Read the playtest rules</a>
+        <a className="btn ghost" href="/court-of-blades-rulebook.docx">Download the Word rulebook</a>
       </div>
 
       <h2>Where the game stands</h2>

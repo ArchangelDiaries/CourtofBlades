@@ -17,6 +17,7 @@ export default function App() {
           <nav className="nav" aria-label="Main">
             <NavLink to="/" end>Overview</NavLink>
             <NavLink to="/knights">Knights</NavLink>
+            <a href="/rules/">Rules</a>
             <NavLink to="/ability">Your ability</NavLink>
             {s.isAdmin && <NavLink to="/admin">Review</NavLink>}
           </nav>

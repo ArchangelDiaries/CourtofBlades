@@ -10,6 +10,7 @@ Built like FORK: **Vite + React**, **Firebase Auth + Firestore**, and a **Netlif
 | --- | --- | --- |
 | `/` | Everyone | Game overview, production status, how Knights take part, submission count |
 | `/knights` | Everyone | All 29 Knights by order, with which ones have submitted |
+| `/rules/` | Everyone | The full playtest rulebook (static page in `public/rules/index.html`), plus the Word version at `/court-of-blades-rulebook.docx` |
 | `/signin` | Knights, organizer | Sign in with ORK (organizer can also use Google) |
 | `/ability` | Signed-in Knights | The ten-question form with a live datasheet preview; save a draft or submit, edit any time |
 | `/admin` | Organizer | Every entry, review status, private notes, link requests, CSV/JSON export |
@@ -43,14 +44,14 @@ The organizer is any ORK account in `ADMIN_ORK_IDS`, or the Google account antif
 
 1. **Firebase**
     1. Create a new Firebase project (for example `courtofblades`).
-    2. Add a Web app and copy its config into the `VITE_FB_*` settings.
+    2. Done: the web app config for `court-of-blades` is built into `src/firebase.js` (the `VITE_FB_*` settings are optional overrides).
     3. Create a Firestore database (production mode).
     4. Authentication: turn on **Google** (for the organizer). Custom-token sign-in needs no switch.
     5. Add your Netlify domain under Authentication → Settings → Authorized domains.
     6. Project settings → Service accounts → Generate new private key. Use its `client_email` and `private_key` for the function.
-    7. Publish the rules: paste `firestore.rules` into Firestore → Rules, or run `npx firebase-tools deploy --only firestore:rules --project <id>`.
+    7. Publish the rules: paste `firestore.rules` into Firestore → Rules, or run `npx firebase-tools deploy --only firestore:rules`.
 2. **Netlify:** create a site from the GitHub repo. Add these environment variables (see `.env.example`):
-    - Builds scope: `VITE_FB_API_KEY`, `VITE_FB_AUTH_DOMAIN`, `VITE_FB_PROJECT_ID`, `VITE_FB_STORAGE_BUCKET`, `VITE_FB_MESSAGING_SENDER_ID`, `VITE_FB_APP_ID`, and optionally `VITE_RULEBOOK_URL`.
+    - Builds scope (optional): `VITE_RULEBOOK_URL`. The Firebase web config is already in `src/firebase.js`.
     - Functions scope, marked secret: `FIREBASE_CLIENT_EMAIL`, `FIREBASE_PRIVATE_KEY`, `ADMIN_ORK_IDS` (your ORK number), `ORK_API_KEY`.
     - `ORK_API_KEY_HEADER`: the header name FORK uses to send its key. Check FORK's `netlify/functions/lib/orkClient.js`, or copy that file over `netlify/functions/lib/orkClient.js` here (it exports the same `orkPost`).
     - Ask the ORK team for a key with client name "Court of Blades/1.0", or reuse FORK's.
@@ -67,6 +68,6 @@ The organizer is any ORK account in `ADMIN_ORK_IDS`, or the Google account antif
 
 ```
 npm install
-cp .env.example .env   # fill in the VITE_FB_* values
+cp .env.example .env   # only needed to override the built-in Firebase config
 npx netlify dev        # site plus the /api/ork-login function on http://localhost:8888
 ```
