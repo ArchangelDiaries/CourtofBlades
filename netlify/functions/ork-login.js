@@ -36,11 +36,14 @@ export async function handleLogin(req, { env = process.env, fetchImpl = fetch, s
   }
 
   let token;
+  let stage = "ork";
   try {
     const auth = await orkPost("Authorization/Authorize", { UserName: username, Password: password, Client: env.ORK_CLIENT || "Court of Blades and Banners/1.0" }, { fetchImpl, env });
     if (!orkOk(auth) || !auth.Token || !auth.UserId) {
+      // Log what the ORK said (never the password) so failures can be diagnosed in Netlify's function log.
+      console.log("ork-login: Authorize refused", JSON.stringify({ user: username.slice(0, 3) + "…", status: auth && auth.Status, prefix: auth && auth.__prefix }));
       await recordFailure(store, { username, ip });
-      return json(401, { error: "The ORK didn't accept that username and password." });
+      return json(401, { error: "The ORK didn't accept that username and password. Use the same login you use on ork.amtgard.com." });
     }
     token = auth.Token;
     const orkId = Number(auth.UserId);
@@ -51,9 +54,14 @@ export async function handleLogin(req, { env = process.env, fetchImpl = fetch, s
     const knight = matchKnight({ orkId, persona });
     const admin = adminIds(env).includes(orkId);
     const claims = { orkId, persona, knightSlug: knight ? knight.slug : "", admin };
+    stage = "firebase";
     const customToken = mintCustomToken({ clientEmail: env.FIREBASE_CLIENT_EMAIL, privateKey: env.FIREBASE_PRIVATE_KEY, uid: `ork_${orkId}`, claims });
+    console.log("ork-login: ok", JSON.stringify({ orkId, knightSlug: claims.knightSlug, admin }));
     return json(200, { customToken, persona, orkId, knightSlug: claims.knightSlug, admin });
   } catch (e) {
+    console.log("ork-login: error", JSON.stringify({ stage, kind: e.kind, message: e.message, detail: e.detail }));
+    if (stage === "firebase") return json(500, { error: "The ORK accepted your login, but this site couldn't sign you in. The organizer needs to check the Firebase settings." });
+    if (e.kind === "blocked") return json(502, { error: "The ORK's firewall blocked this site's request. The organizer needs to check the ORK key." });
     return json(502, { error: "Couldn't reach the ORK right now. Try again in a minute." });
   } finally {
     if (token) {

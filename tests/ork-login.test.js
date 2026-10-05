@@ -14,6 +14,8 @@ function fakeOrk({ ok = true, userId = 36705, persona = "Sir Monkey" } = {}) {
   const calls = [];
   const fetchImpl = async (url, init) => {
     const params = Object.fromEntries(new URLSearchParams(init.body));
+    // the ORK only reads arguments sent as request[...] fields
+    if (params.call === "Authorization/Authorize" && !params["request[UserName]"]) throw new Error("UserName must be sent as request[UserName]");
     calls.push({ url, params });
     let out = {};
     if (params.call === "Authorization/Authorize") out = ok ? { Status: { Status: 0 }, Token: "t".repeat(32), UserId: userId } : { Status: { Status: 5, Error: "bad" } };
@@ -96,5 +98,27 @@ describe("roster", () => {
     expect(matchKnight({ orkId: 4098, persona: "anything" }).slug).toBe("downfall");
     expect(matchKnight({ orkId: 0, persona: "  sir   ZYAX blackraven " }).slug).toBe("sir-zyax-blackraven");
     expect(matchKnight({ orkId: 43232, persona: "Augustus Rodriguez" }).slug).toBe("sir-kismet");
+  });
+});
+
+describe("ork request format", () => {
+  it("wraps every argument in request[...] like ORK's JsonServer expects", async () => {
+    const { orkBody } = await import("../netlify/functions/lib/orkClient.js");
+    const b = orkBody("Authorization/Authorize", { UserName: "monkey", Password: "pw", Client: "C" });
+    expect(b.get("call")).toBe("Authorization/Authorize");
+    expect(b.get("request[UserName]")).toBe("monkey");
+    expect(b.get("request[Password]")).toBe("pw");
+    expect(b.has("UserName")).toBe(false);
+  });
+  it("tolerates ORK warnings printed before the JSON", async () => {
+    const { orkPost } = await import("../netlify/functions/lib/orkClient.js");
+    const fetchImpl = async () => new Response('Parameter x is not set; {"Status":{"Status":0},"Token":"t","UserId":1}');
+    const r = await orkPost("Player/GetPlayer", {}, { fetchImpl, env: {} });
+    expect(r.UserId).toBe(1);
+  });
+  it("reports a firewall challenge as blocked", async () => {
+    const { orkPost } = await import("../netlify/functions/lib/orkClient.js");
+    const fetchImpl = async () => new Response("<html><title>Just a moment...</title></html>", { status: 403 });
+    await expect(orkPost("Player/GetPlayer", {}, { fetchImpl, env: {} })).rejects.toMatchObject({ kind: "blocked" });
   });
 });
