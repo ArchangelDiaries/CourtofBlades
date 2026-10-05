@@ -634,7 +634,7 @@ tr.grp td{background:var(--wash);font-family:var(--sc);letter-spacing:.08em;font
     <li><span class="term">Multi-belted:</span> for +10 points per other order they hold, a Knight gains one ability from each of those orders. Sir Monkey, listed under Sword and belted in Crown, Flame and Serpent, could cost up to 105 points.</li>
     <li><span class="term">Field abilities:</span> a Knight buys field abilities from the list of any class they are a Paragon of. A Knight with no Paragonship picks one class list.</li>
   </ul>
-  <p>The roster holds 29 Knights. The core 17 are the four most senior Knights of each order by belting date (Westmarch has one Knight of Battle). Eleven more join because they also hold Paragonships, and Dame Wendy the Wench rides with the Serpent. Each is listed under their earliest knighthood. Source: <a href="https://ork.amtgard.com/orkui/index.php?Route=Reports/knights_list&amp;KingdomId=21">ORK Knights list</a>.</p>
+  <p>The roster holds 30 Knights. The core 17 are the four most senior Knights of each order by belting date (Westmarch has one Knight of Battle). Eleven more join because they also hold Paragonships, Dame Wendy the Wench rides with the Serpent, and Sir Kismet, the Privateer Caballero Augustus Rodriguez, the Navigator, joins the Flame as a guest Knight of note from the Kingdom of the Nine Blades. Each is listed under their earliest knighthood. Source: <a href="https://ork.amtgard.com/orkui/index.php?Route=Reports/knights_list&amp;KingdomId=21">ORK Knights list</a>.</p>
 
   <h3>Datasheets</h3>
   <p>Each Knight has a datasheet with a 3:4 frame for their player template graphic. Tap a shield on the lives track to mark a life spent; the marks stay in this browser only.</p>
@@ -776,6 +776,7 @@ const KNIGHTS=[
  ["flame","Sir Furball","Siar Geata",2014,"",""],
  ["flame","Leah (SSD)","Seven Sleeping Dragons",2016,"Serpent",""],
  ["flame","Fiks von Grunwald","Wavehaven",2018,"",""],
+ ["flame","Sir Kismet, the Privateer Caballero Augustus Rodriguez, the Navigator","Felfrost, Kingdom of the Nine Blades (guest Knight)",2021,"",""],
  ["flame","Mikezilla Darkwater","Wavehaven",2022,"","Warrior"],
  ["flame","Bacchus Springjaw","Clockwork Spires",2024,"","Healer"],
  ["flame","Clenawe","Thor's Refuge",2025,"","Wizard"],
@@ -919,7 +920,7 @@ document.querySelectorAll(".lives").forEach(el=>{
 });
 // filters
 const fk=["all","sword","battle","crown","flame","serpent"];
-$("#kFilters").innerHTML=fk.map(k=>`<button type="button" data-f="${k}" aria-pressed="${k==="all"}">${k==="all"?"All 28":ORDERS[k].short+" · "+KNIGHTS.filter(x=>x[0]===k).length}</button>`).join("");
+$("#kFilters").innerHTML=fk.map(k=>`<button type="button" data-f="${k}" aria-pressed="${k==="all"}">${k==="all"?"All "+KNIGHTS.length:ORDERS[k].short+" · "+KNIGHTS.filter(x=>x[0]===k).length}</button>`).join("");
 $("#kFilters").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const f=b.dataset.f;
   document.querySelectorAll("#kFilters button").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));
   document.querySelectorAll(".sheet").forEach(s=>{s.hidden=!(f==="all"||s.dataset.order===f)});});

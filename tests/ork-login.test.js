@@ -74,14 +74,27 @@ describe("ork-login", () => {
   });
 });
 
+describe("ork headers", () => {
+  it("sends the ORK key and client name as headers, never in the body", async () => {
+    const seen = [];
+    const fetchImpl = async (url, init) => { seen.push(init); return new Response(JSON.stringify({ Status: { Status: 0 }, Token: "t".repeat(32), UserId: 43232 })); };
+    const { orkPost } = await import("../netlify/functions/lib/orkClient.js");
+    await orkPost("Player/GetPlayer", { MundaneId: "1" }, { fetchImpl, env: { ORK_API_KEY: "k123" } });
+    expect(seen[0].headers["X-Ork-Key"]).toBe("k123");
+    expect(seen[0].headers["X-ORK-Client"]).toBe("Court of Blades and Banners/1.0");
+    expect(String(seen[0].body)).not.toContain("k123");
+  });
+});
+
 describe("roster", () => {
-  it("has 29 unique Knights", () => {
-    expect(roster).toHaveLength(29);
-    expect(new Set(roster.map((k) => k.slug)).size).toBe(29);
-    expect(new Set(roster.map((k) => k.orkId)).size).toBe(29);
+  it("has 30 unique Knights", () => {
+    expect(roster).toHaveLength(30);
+    expect(new Set(roster.map((k) => k.slug)).size).toBe(30);
+    expect(new Set(roster.map((k) => k.orkId)).size).toBe(30);
   });
   it("matches by ORK number first, then by persona", () => {
     expect(matchKnight({ orkId: 4098, persona: "anything" }).slug).toBe("downfall");
     expect(matchKnight({ orkId: 0, persona: "  sir   ZYAX blackraven " }).slug).toBe("sir-zyax-blackraven");
+    expect(matchKnight({ orkId: 43232, persona: "Augustus Rodriguez" }).slug).toBe("sir-kismet");
   });
 });

@@ -19,7 +19,8 @@ export default function Knights() {
               <article key={k.slug} className={`card order o-${k.order}`}>
                 <div className="ordlab">{ORDER_NAME[k.order]}</div>
                 <div className="kname">{k.name}</div>
-                <p className="muted" style={{ margin: ".1rem 0 .5rem", fontFamily: "var(--sans)", fontSize: ".9rem" }}>{k.park} · Belted {k.belted}</p>
+                <p className="muted" style={{ margin: ".1rem 0 .5rem", fontFamily: "var(--sans)", fontSize: ".9rem" }}>{k.park}{k.guest ? ` · ${k.kingdom}` : ""} · Belted {k.belted}</p>
+                {k.guest && <p className="ordlab" style={{ margin: "0 0 .4rem" }}>Guest Knight of note</p>}
                 {done[k.slug] ? <span className="submitted">Ability submitted</span> : <span className="waiting">Waiting for their ability</span>}
               </article>
             ))}

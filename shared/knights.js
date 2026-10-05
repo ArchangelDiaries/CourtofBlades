@@ -114,6 +114,16 @@ export default [
   "orkId": 21690
  },
  {
+  "slug": "sir-kismet",
+  "name": "Sir Kismet, the Privateer Caballero Augustus Rodriguez, the Navigator",
+  "order": "flame",
+  "park": "Felfrost",
+  "kingdom": "Kingdom of the Nine Blades",
+  "guest": true,
+  "belted": 2021,
+  "orkId": 43232
+ },
+ {
   "slug": "mikezilla-darkwater",
   "name": "Mikezilla Darkwater",
   "order": "flame",

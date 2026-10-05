@@ -2,9 +2,8 @@
 // so every call is a POST of form fields: call=Class/Method plus parameters.
 // Passwords only ever travel in the POST body, never in a URL.
 //
-// If FORK's netlify/functions/lib/orkClient.js sends the API key in a
-// specific header, set ORK_API_KEY_HEADER to that header name (or copy
-// FORK's file over this one; it exposes the same orkPost name).
+// The ORK key is sent in the X-Ork-Key header and the client name in X-ORK-Client.
+// Set ORK_API_KEY in Netlify (Functions scope, secret); never commit the key.
 
 export const ORK_URL = process.env.ORK_BASE || "https://ork.amtgard.com/orkservice/Json/index.php";
 
@@ -12,9 +11,9 @@ export function orkHeaders(env = process.env) {
   const h = {
     Accept: "application/json",
     "Content-Type": "application/x-www-form-urlencoded",
-    "X-ORK-Client": env.ORK_CLIENT || "Court of Blades/1.0",
+    "X-ORK-Client": env.ORK_CLIENT || "Court of Blades and Banners/1.0",
   };
-  if (env.ORK_API_KEY) h[env.ORK_API_KEY_HEADER || "X-ORK-API-Key"] = env.ORK_API_KEY;
+  if (env.ORK_API_KEY) h[env.ORK_API_KEY_HEADER || "X-Ork-Key"] = env.ORK_API_KEY;
   return h;
 }
 

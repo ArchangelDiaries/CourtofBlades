@@ -37,7 +37,7 @@ export async function handleLogin(req, { env = process.env, fetchImpl = fetch, s
 
   let token;
   try {
-    const auth = await orkPost("Authorization/Authorize", { UserName: username, Password: password, Client: env.ORK_CLIENT || "Court of Blades/1.0" }, { fetchImpl, env });
+    const auth = await orkPost("Authorization/Authorize", { UserName: username, Password: password, Client: env.ORK_CLIENT || "Court of Blades and Banners/1.0" }, { fetchImpl, env });
     if (!orkOk(auth) || !auth.Token || !auth.UserId) {
       await recordFailure(store, { username, ip });
       return json(401, { error: "The ORK didn't accept that username and password." });
