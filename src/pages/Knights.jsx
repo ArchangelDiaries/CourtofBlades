@@ -17,6 +17,9 @@ function Heraldry({ k }) {
       </div>
     );
   }
+  if (k.portrait) {
+    return <img className="herald portrait" src={k.portrait} alt={`Portrait of ${k.name}`} loading="lazy" decoding="async" width="64" height="64" onError={() => setFailed(true)} />;
+  }
   return (
     <img className="herald" src={`/api/ork-image?id=${k.orkId}&kind=heraldry`} alt={`${k.name}'s heraldry`}
       loading="lazy" decoding="async" width="64" height="64" onError={() => setFailed(true)} />

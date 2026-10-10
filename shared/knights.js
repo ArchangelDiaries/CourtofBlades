@@ -262,7 +262,8 @@ export default [
     "\"Almost.\" (10 pts from his Knight budget)",
     "When an enemy's melee attack against him misses with every die, he may immediately move 2\" (not into base contact)."
    ]
-  }
+  },
+  "portrait": "/knights/gravekeeper-sir-spade.jpg"
  },
  {
   "slug": "halavere-blackraven",
