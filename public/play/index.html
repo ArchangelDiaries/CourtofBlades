@@ -407,6 +407,8 @@ function makeTroop(type){
 const SIGS = {
   "Sir Rose Thorn 가시 장미": { id:"pin", name:"Pinning Arrow", quote:"I said stop moving.", weapon:"Single Short", bow:true,
     text:"Reaction, once per round: when a foe charges, she looses a Pinning Arrow (5+ to hit, 6 into cover). On a hit the charge stops dead. It costs her next shot." },
+  "Halavere Blackraven": { id:"discord", name:"Sew Discord", quote:"CORSAIRS!!!",
+    text:"Every other round, when he activates: a pool of shadows opens beside you. While you stand in or next to it, you're -1 to hit until the end of the round." },
   "Gravekeeper Sir Spade the Laborious": { id:"reach", name:"Edge of Reach", quote:"Almost.",
     text:"Always on: foes are -1 to hit him in melee, unless they charged him this round." },
 };
@@ -916,6 +918,8 @@ async function attack(att, def, wpn, opts = {}){
   if (opts.melee && def.terror) mods -= 1;
   const reach = opts.melee && def.sig && def.sig.id === "reach" && B.charged !== att.side;
   if (reach) mods -= 1;
+  const shadowed = att.side === "you" && B.shadow && cheb(att, B.shadow) <= 1;
+  if (shadowed) mods -= 1;
   if (att.side === "foe" && B.youBroken) {}
   mods = Math.max(-2, mods);
   if (opts.chargeHit) mods += 1;
@@ -929,7 +933,7 @@ async function attack(att, def, wpn, opts = {}){
     hits = rolls.filter(r => r === 6 || (r !== 1 && r >= target)).length;
     const misses = rolls.length - hits;
     if (reach && !hits) log(`<b>"${esc(def.sig.quote)}"</b> ${esc(short(def))} dances just out of reach.`);
-    log(`${nm(att)} ${v(att,"strike","strikes")} with ${esc(wpn.name)}${opts.aimed ? ` (aimed at the ${opts.aimed})` : ""}${opts.cover ? " into cover" : ""}${reach ? " at the edge of his reach" : ""}: ${dice(rolls, target)} needs ${target}+, <b>${hits} hit${hits===1?"":"s"}</b>.`);
+    log(`${nm(att)} ${v(att,"strike","strikes")} with ${esc(wpn.name)}${opts.aimed ? ` (aimed at the ${opts.aimed})` : ""}${opts.cover ? " into cover" : ""}${reach ? " at the edge of his reach" : ""}${shadowed ? " out of the shadows" : ""}: ${dice(rolls, target)} needs ${target}+, <b>${hits} hit${hits===1?"":"s"}</b>.`);
     if (opts.melee && def.knight && def.order === "sword" && misses > 0) {
       log(`<b>Master of the Blade:</b> ${esc(short(def))} punishes ${misses} miss${misses===1?"":"es"}.`);
       for (let i = 0; i < misses && !att.dead; i++) await damage(att, { lethal:false, D:1, mortal:true, by:def });
@@ -1036,7 +1040,7 @@ async function startBattle(spec){
 }
 async function battleRound(){
   const y = B.you, f = B.foe;
-  B.round++; B.guileUsed = false; B.bmUsed = false; B.pinUsed = false; B.pinSpent = false; B.arrowUsed = false; B.healUsed = false; B.charged = null; B.uphill = null; y.cond.fellBack = false; f.cond.fellBack = false;
+  B.round++; B.shadow = null; B.guileUsed = false; B.bmUsed = false; B.pinUsed = false; B.pinSpent = false; B.arrowUsed = false; B.healUsed = false; B.charged = null; B.uphill = null; y.cond.fellBack = false; f.cond.fellBack = false;
   log(`Round ${B.round}`, "phase");
   knightReturns();
   if (y.regen && !y.dead && (y.W < y.maxW || y.arm || y.leg)) { restore(y, 1); log("<b>Regrowth:</b> you knit back 1 W."); }
@@ -1117,9 +1121,21 @@ async function pinningArrow(y, f, dest){
   log(`<b>"${esc(f.sig.quote)}"</b> The arrow pins you in place. Your charge stops dead.`, "big");
   renderBattle(); return true;
 }
+// Halavere Blackraven's signature: a pool of shadows that leaves you -1 to hit this round.
+function sewDiscord(f, y){
+  if (!f.sig || f.sig.id !== "discord" || f.dead || f.cond.frozen || B.shadow || y.dead) return;
+  if (B.round % 2 === 0) { if (B.round === 2 || Math.random() < .5) log(`The shadows reclaim ${esc(short(f))} for a moment. They'll gather again next round.`); return; }
+  const spots = [];
+  for (let dy=-1;dy<=1;dy++) for (let dx=-1;dx<=1;dx++) { const x=y.x+dx, yy=y.y+dy; if ((dx||dy) && open(x,yy) && !(x===f.x && yy===f.y)) spots.push({x, y:yy}); }
+  if (!spots.length) return;
+  B.shadow = spots[Math.floor(Math.random()*spots.length)];
+  log(`<b>"${esc(f.sig.quote)}"</b> ${esc(short(f))} uses <b>Sew Discord</b>: a pool of shadows opens beside you. You're -1 to hit while you stand in or next to it this round.`);
+  renderBattle();
+}
 async function moveFoe(){
   const f = B.foe, y = B.you;
   if (f.dead || f.cond.frozen) return;
+  sewDiscord(f, y);
   if (f.cond.pinned || f.cond.entangled) { log(`${esc(short(f))} is held fast.`); f.cond.pinned = f.cond.entangled = false; return; }
   const engaged = engagedNow();
   if (f.sig && f.sig.id === "pin") {
@@ -1338,7 +1354,7 @@ function log(html, cls){ const l = $("#log"); if (!l || !html) return; const p =
 function fighterCard(m, color){
   const sv = saveTarget(m, {AP:0}), w = effWeapon(m, m.weapon);
   const chips = [m.arm&&"Arm lost", m.leg&&"Leg lost", m.damaged&&"Armor Damaged", m.cond.frozen&&"Frozen", (m.cond.pinned||m.cond.entangled)&&"Held", m.cond.heat&&"Hot weapon", m.dead&&"In Nirvana"].filter(Boolean).map(c => `<span class="chip">${c}</span>`).join("") +
-    [m.cond.stoneskin&&"Stoneskin", m.cond.sanctuary&&"Sanctuary", m.sig && (m.sig.id === "pin" ? (B && B.pinUsed ? m.sig.name + " spent" : m.sig.name + " ready") : m.sig.name)].filter(Boolean).map(c => `<span class="chip good">${c}</span>`).join("");
+    [m.cond.stoneskin&&"Stoneskin", m.cond.sanctuary&&"Sanctuary", m.sig && (m.sig.id === "discord" ? (B && B.shadow ? "Shadow pool open" : m.sig.name) : m.sig.id === "pin" ? (B && B.pinUsed ? m.sig.name + " spent" : m.sig.name + " ready") : m.sig.name)].filter(Boolean).map(c => `<span class="chip good">${c}</span>`).join("");
   return `<div class="fighter" style="--oc:${color}"><b>${esc(m.side==="you" ? m.name : short(m))}</b>
     <span>${m.side==="you" ? esc(title()) : m.knight ? ORDERS[m.order].name : m.fac==="hound" ? "Ashen Hound" : FACTION[m.fac][0] + (m.elite ? " · elite" : "")} · ${m.side==="you" && B && B.spec.kind==="duel" ? `tourney lives ${B.duelLives ?? 3}` : `lives ${m.lives}`}</span>
     <div class="wbar"><i style="width:${Math.max(0,m.W)/m.maxW*100}%"></i></div>
@@ -1366,6 +1382,7 @@ function drawBattle(now){
     drawMan(GOX+m.x*TS, GOY+m.y*TS, {...m.look, banner: m===B.you && state.hasBanner}, face, 0);
     if (m === B.you) { cx.fillStyle = "#e8c868"; cx.fillRect(GOX+m.x*TS+6, GOY+m.y*TS-4, 4, 2); }
   }
+  if (B.shadow) { const sx = GOX + B.shadow.x*TS, sy = GOY + B.shadow.y*TS; cx.fillStyle = "rgba(10,8,20,.55)"; cx.beginPath(); cx.ellipse(sx+8, sy+10, 7.5, 4.5, 0, 0, 7); cx.fill(); cx.fillStyle = "rgba(90,70,140,.5)"; cx.beginPath(); cx.ellipse(sx+8, sy+10, 4, 2, 0, 0, 7); cx.fill(); }
   if (engagedNow()) { const mx = GOX + (B.you.x + B.foe.x)/2*TS + 4, my = GOY + (B.you.y + B.foe.y)/2*TS - 2; cx.strokeStyle="#fff"; cx.lineWidth=1.5; cx.beginPath(); cx.moveTo(mx,my); cx.lineTo(mx+8,my+8); cx.moveTo(mx+8,my); cx.lineTo(mx,my+8); cx.stroke(); }
 
 }

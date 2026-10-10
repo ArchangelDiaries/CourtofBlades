@@ -270,7 +270,22 @@ export default [
   "order": "serpent",
   "park": "Belial Peaks",
   "belted": 2023,
-  "orkId": 87728
+  "orkId": 87728,
+  "signature": {
+   "name": "Sew Discord",
+   "cry": "CORSAIRS!!!",
+   "quote": "CORSAIRS!!!",
+   "when": "Once per round, when he activates",
+   "rules": [
+    "Place a Shadow Pool marker (40mm) on an unoccupied spot within 12\" of Halavere, at least 1\" from every model. No line of sight is needed.",
+    "Until the end of the round, enemy models within 3\" of the Shadow Pool are -1 to hit, in melee and with ranged attacks.",
+    "The pool is removed at the end of the round."
+   ],
+   "upgrade": [
+    "Shadowstep (10 pts from his Knight budget)",
+    "After placing the Shadow Pool, Halavere may be placed touching it, but not within 1\" of an enemy."
+   ]
+  }
  },
  {
   "slug": "ser-jynx-mercades",
