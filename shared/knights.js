@@ -64,7 +64,20 @@ export default [
   "order": "crown",
   "park": "Siar Geata",
   "belted": 2021,
-  "orkId": 20003
+  "orkId": 20003,
+  "signature": {
+   "name": "Close Arrow Support",
+   "cry": "This is a team effort: don't fight alone.",
+   "quote": "This is a team effort: don't fight alone.",
+   "when": "Reaction, once per round",
+   "loadout": "Bow (24\") and Single Short",
+   "rules": [
+    "When an enemy model charges a friendly model within 12\" of Scoot, or fights one in melee, Scoot may loose one arrow at it straight away, even though it's in combat, as long as he can see it and isn't engaged himself.",
+    "The arrow is +1 to hit, and its wound rolls of 5+ are Lethal: the enemy's attention is on someone else.",
+    "Don't fight alone: the friendly model may re-roll one failed hit roll in that combat.",
+    "Cost: Scoot can't shoot in his next Shoot phase."
+   ]
+  }
  },
  {
   "slug": "azus",
@@ -72,7 +85,19 @@ export default [
   "order": "crown",
   "park": "Wyvern's Spur",
   "belted": 2022,
-  "orkId": 18291
+  "orkId": 18291,
+  "signature": {
+   "name": "Confusion",
+   "cry": "Derp.",
+   "quote": "Derp.",
+   "when": "Once per round, when he activates",
+   "loadout": "Bow (24\") and Single Short",
+   "rules": [
+    "Choose one enemy model within 12\" that Azus can see, then roll a D6.",
+    "On a 1, Azus confuses himself instead: until the end of the round he can't shoot or charge, he's -1 to hit, and his Presence on objectives counts for the enemy. He says \"Derp.\" after the fact.",
+    "On a 2+, the target takes a Leadership test. If it fails, it's Confused until the end of the round: it can't charge, it's -1 to hit, and its Presence on objectives counts for Azus's side."
+   ]
+  }
  },
  {
   "slug": "thistledown-notagnome",
@@ -96,7 +121,18 @@ export default [
   "order": "flame",
   "park": "Siar Geata",
   "belted": 2014,
-  "orkId": 521
+  "orkId": 521,
+  "signature": {
+   "name": "When in Doubt",
+   "cry": "When in doubt, core it out.",
+   "quote": "When in doubt, core it out.",
+   "when": "Once per round, when he fights",
+   "loadout": "Great Weapon (polearm or great sword) and plate",
+   "rules": [
+    "After Sir Furball's melee attacks are resolved, if any of his wounds were saved or turned aside by a ward, he makes one more attack against the same target.",
+    "That attack gets +1 S and an extra -1 AP. Swing harder."
+   ]
+  }
  },
  {
   "slug": "leah-ssd",
@@ -240,7 +276,18 @@ export default [
   "order": "serpent",
   "park": "Siar Geata",
   "belted": 2023,
-  "orkId": 28767
+  "orkId": 28767,
+  "signature": {
+   "name": "Mother Kisses the Boo-Boos",
+   "cry": "",
+   "quote": "",
+   "when": "Once per round, at the start of her activation",
+   "rules": [
+    "Choose up to two friendly models within 6\" of Dame Wendy, not counting herself.",
+    "Each one restores 1 W or one lost limb.",
+    "Inspired to fight on: until the end of the round, they automatically pass Leadership tests."
+   ]
+  }
  },
  {
   "slug": "gravekeeper-sir-spade",

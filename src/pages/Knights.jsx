@@ -30,7 +30,7 @@ function Signature({ s }) {
   return (
     <div className="sig">
       <div className="ordlab">Signature · {s.when}</div>
-      <div className="signame">{s.name} <q>{s.quote}</q></div>
+      <div className="signame">{s.name}{s.quote && <> <q>{s.quote}</q></>}</div>
       {s.loadout && <p className="muted"><b>Loadout:</b> {s.loadout}</p>}
       <ul>{s.rules.map((r) => <li key={r}>{r}</li>)}</ul>
       {s.upgrade && <p className="muted"><b>Upgrade, {s.upgrade[0]}:</b> {s.upgrade[1]}</p>}

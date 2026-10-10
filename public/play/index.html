@@ -407,6 +407,14 @@ function makeTroop(type){
 const SIGS = {
   "Sir Rose Thorn 가시 장미": { id:"pin", name:"Pinning Arrow", quote:"I said stop moving.", weapon:"Single Short", bow:true,
     text:"Reaction, once per round: when a foe charges, she looses a Pinning Arrow (5+ to hit, 6 into cover). On a hit the charge stops dead. It costs her next shot." },
+  "Azus": { id:"confuse", name:"Confusion", quote:"Derp.", weapon:"Single Short", bow:true,
+    text:"Once per round, when he activates: you test Leadership or get Confused (-1 to hit, no charging) this round. On a roll of 1 he confuses himself instead, and says \"Derp.\" after the fact." },
+  "Scoot": { id:"support", name:"Close Arrow Support", quote:"This is a team effort: don't fight alone.", weapon:"Single Short", bow:true,
+    text:"Reaction, once per round: when you charge him, he looses a point-blank arrow at +1 to hit, with wound rolls of 5+ Lethal. It costs him that round's shot." },
+  "Sir Furball": { id:"doubt", name:"When in Doubt", quote:"When in doubt, core it out.", weapon:"Great Weapon",
+    text:"Once per round, when he fights: if any of his wounds are saved or warded, he swings once more at +1 Strength and an extra -1 AP." },
+  "Dame Wendy the Wench": { id:"boo", name:"Mother Kisses the Boo-Boos", quote:"",
+    text:"Every other round, at the start of the round, she patches herself up: 1 W or a lost limb comes back." },
   "Halavere Blackraven": { id:"discord", name:"Sew Discord", quote:"CORSAIRS!!!",
     text:"Every other round, when he activates: a pool of shadows opens beside you. While you stand in or next to it, you're -1 to hit until the end of the round." },
   "Gravekeeper Sir Spade the Laborious": { id:"reach", name:"Edge of Reach", quote:"Almost.",
@@ -716,7 +724,7 @@ function herald(n){
     const k = left[Math.floor(Math.random()*left.length)], o = ORDERS[k[0]];
     state.duelKnight = { order:k[0], name:k[1], x:16, y:32 };
     state.x = 24; state.y = 32; state.face = "left"; state.lr = "left";
-    say([{who:n.name, text:`Enter the field: ${k[1]}, ${o.name}!`},{who:k[1].split(",")[0], text: SIGS[k[1]] ? SIGS[k[1]].quote : DUEL_LINES[Math.floor(Math.random()*DUEL_LINES.length)]}], () => startBattle({kind:"duel"}));
+    say([{who:n.name, text:`Enter the field: ${k[1]}, ${o.name}!`},{who:k[1].split(",")[0], text: SIGS[k[1]] && SIGS[k[1]].quote ? SIGS[k[1]].quote : DUEL_LINES[Math.floor(Math.random()*DUEL_LINES.length)]}], () => startBattle({kind:"duel"}));
   });
 }
 const DUEL_LINES = ["Let's see what the Marches have taught you.","I've heard your name. Let's see if it's earned.","Salute, then fight. That's the whole of it.","Don't hold back on my account."];
@@ -916,6 +924,7 @@ async function attack(att, def, wpn, opts = {}){
   if (opts.aimed) mods -= 1;
   if (opts.cover) mods -= 1;
   if (opts.melee && def.terror) mods -= 1;
+  if (att.cond.confused || att.cond.derp) mods -= 1;
   const reach = opts.melee && def.sig && def.sig.id === "reach" && B.charged !== att.side;
   if (reach) mods -= 1;
   const shadowed = att.side === "you" && B.shadow && cheb(att, B.shadow) <= 1;
@@ -944,22 +953,27 @@ async function attack(att, def, wpn, opts = {}){
   let wr = []; for (let i = 0; i < hits; i++) wr.push(d6());
   if (att.knight && att.order === "sword") wr = wr.map(r => r < wNeed ? d6() : r);
   if (att.knight && att.order === "serpent") wr = wr.map(r => r === 1 ? d6() : r);
-  const wounds = wr.filter(r => r >= wNeed);
+  const wounds = wr.filter(r => r >= wNeed); let coreDoubt = false;
   log(`To wound (S${wpn.S} vs T${def.T}): ${dice(wr, wNeed, true)} needs ${wNeed}+, <b>${wounds.length} wound${wounds.length===1?"":"s"}</b>.`);
   for (const r of wounds) {
     if (def.dead) break;
-    const lethal = r === 6 || wpn.D >= 2 || opts.smite || (opts.melee && att.lethal && r >= att.lethal) || (wpn.name === "Bow" && att.deadeye && r >= 5);
+    const lethal = r === 6 || wpn.D >= 2 || opts.smite || (opts.support && r >= 5) || (opts.melee && att.lethal && r >= att.lethal) || (wpn.name === "Bow" && att.deadeye && r >= 5);
     const sv = opts.phase ? null : saveTarget(def, wpn);
     if (sv != null) {
       let s = d6(), ok = s !== 1 && s >= sv;
       if (ok && att.knight && att.order === "serpent" && !B.guileUsed) { B.guileUsed = true; log(`<b>Serpent's Guile:</b> ${esc(short(att))} forces a re-roll of your ${dice([s], sv)} save.`); s = d6(); ok = s !== 1 && s >= sv; }
       log(`${nm(def)} ${v(def,"save","saves")} on ${sv}+: ${dice([s], sv)} ${ok ? "<b>saved</b>." : "failed."}`);
       if (!ok && def.battlemaster && !B.bmUsed) { B.bmUsed = true; s = d6(); ok = s !== 1 && s >= sv; log(`<b>Battlemaster:</b> you re-roll the save: ${dice([s], sv)} ${ok ? "<b>saved</b>." : "failed."}`); }
-      if (ok) continue;
+      if (ok) { coreDoubt = true; continue; }
       if (def.baseSv != null && !def.damaged) { def.damaged = true; log(`${poss(def)} armor is <b>Damaged</b>.`); }
     }
-    if (def.ward) { const w = d6(); if (w >= def.ward) { log(`Ward ${def.ward}+: ${dice([w], def.ward)} turns the blow aside.`); continue; } }
+    if (def.ward) { const w = d6(); if (w >= def.ward) { log(`Ward ${def.ward}+: ${dice([w], def.ward)} turns the blow aside.`); coreDoubt = true; continue; } }
     await damage(def, { lethal, D:wpn.D, aimed:opts.aimed, by:att, melee:opts.melee });
+  }
+  if (coreDoubt && opts.melee && !opts.doubt && att.sig && att.sig.id === "doubt" && !B.doubtUsed && !def.dead && !att.dead) {
+    B.doubtUsed = true;
+    log(`<b>When in Doubt:</b> "${esc(att.sig.quote)}" ${esc(short(att))} swings again, harder.`);
+    await attack(att, def, { ...wpn, name: wpn.name + ", swung harder", A: 1, S: wpn.S + 1, AP: (wpn.AP || 0) - 1 }, { ...opts, doubt: true });
   }
 }
 async function damage(m, { lethal, D = 1, aimed, mortal, by, melee }){
@@ -1040,9 +1054,10 @@ async function startBattle(spec){
 }
 async function battleRound(){
   const y = B.you, f = B.foe;
-  B.round++; B.shadow = null; B.guileUsed = false; B.bmUsed = false; B.pinUsed = false; B.pinSpent = false; B.arrowUsed = false; B.healUsed = false; B.charged = null; B.uphill = null; y.cond.fellBack = false; f.cond.fellBack = false;
+  B.round++; B.shadow = null; B.supportUsed = false; B.doubtUsed = false; B.confuseUsed = false; B.guileUsed = false; B.bmUsed = false; B.pinUsed = false; B.pinSpent = false; B.arrowUsed = false; B.healUsed = false; B.charged = null; B.uphill = null; y.cond.fellBack = false; f.cond.fellBack = false;
   log(`Round ${B.round}`, "phase");
   knightReturns();
+  if (f.sig && f.sig.id === "boo" && !f.dead && B.round % 2 === 1 && (f.W < f.maxW || f.arm || f.leg)) { restore(f, 1); log(`<b>Mother Kisses the Boo-Boos:</b> ${esc(short(f))} patches herself up.`); }
   if (y.regen && !y.dead && (y.W < y.maxW || y.arm || y.leg)) { restore(y, 1); log("<b>Regrowth:</b> you knit back 1 W."); }
   const a = d6(), b = d6();
   const pri = a > b ? "you" : b > a ? "foe" : (B.lastPri === "you" ? "foe" : "you"); B.lastPri = pri;
@@ -1069,7 +1084,7 @@ async function battleRound(){
   for (const m of [y, f]) {
     if (m.cond.frozen) { m.cond.frozen--; if (!m.cond.frozen) log(`The ice around ${m.side==="you"?"you":esc(short(m))} cracks away.`); }
     if (m.cond.heat) { m.cond.heat--; }
-    m.cond.decree = false; m.cond.sanctuary = false;
+    m.cond.decree = false; m.cond.sanctuary = false; m.cond.confused = false; m.cond.derp = false;
   }
   renderBattle();
   if (!B.result) await choose("", [["next","Next round",""]]);
@@ -1086,7 +1101,7 @@ async function moveYou(){
   const opts = [];
   if (engaged && B.charged === "foe") log("You were charged this round: no falling back.");
   if (!engaged) {
-    if (charges.length) opts.push(["charge","Charge","Into contact, strike first"]);
+    if (charges.length && !y.cond.confused) opts.push(["charge","Charge","Into contact, strike first"]);
     if (moves.length) opts.push(["pick","Move","Tap a blue tile on the map"]);
     opts.push(["hold","Hold","Stay where you are"]);
   } else {
@@ -1104,11 +1119,21 @@ async function moveYou(){
     y.cond.fellBack = true;
     if (bt(y.x,y.y) === "x" || bt(dest.x,dest.y) === "x") { const sc = d6(); log(`<b>Shardcut:</b> you back out through the crystal thicket: ${dice([sc], 2)}${sc === 1 ? "" : " and slip through clean."}`); if (sc === 1) { y.x = dest.x; y.y = dest.y; await damage(y, { lethal:false, D:1 }); if (y.dead || B.result) return; return; } }
   }
+  if (dest.charge) { await supportArrow(y, f); if (B.result || y.dead) return; }
   if (dest.charge && await pinningArrow(y, f, dest)) return;
   const startHill = bt(y.x,y.y) === "^";
   y.x = dest.x; y.y = dest.y;
   if (dest.charge) { B.charged = "you"; if (!startHill && bt(y.x,y.y)==="^") B.uphill = "you"; log("You <b>charge</b>!"); }
   else log(engaged ? "You fall back." : "You move.");
+}
+// Scoot's signature: a point-blank arrow at a charging foe.
+async function supportArrow(y, f){
+  if (!f.sig || f.sig.id !== "support" || f.dead || f.cond.frozen || f.arm || B.supportUsed || !f.bow) return;
+  const los = gridLos(f, y); if (!los.clear || cheb(f, y)*2 > 24) return;
+  B.supportUsed = true; B.pinSpent = true;
+  log(`<b>Close Arrow Support:</b> "${esc(f.sig.quote)}" ${esc(short(f))} looses an arrow as you charge.`);
+  await attack(f, y, effWeapon(f, "Bow"), { cover: los.cover, chargeHit: true, support: true });
+  renderBattle();
 }
 // Sir Rose Thorn's signature: a reaction shot that stops a charge.
 async function pinningArrow(y, f, dest){
@@ -1120,6 +1145,17 @@ async function pinningArrow(y, f, dest){
   if (!hit) { log("The arrow whistles past. You keep coming."); renderBattle(); return false; }
   log(`<b>"${esc(f.sig.quote)}"</b> The arrow pins you in place. Your charge stops dead.`, "big");
   renderBattle(); return true;
+}
+// Azus's signature: confuse the foe, or on a 1, himself.
+function confusion(f, y){
+  if (!f.sig || f.sig.id !== "confuse" || f.dead || f.cond.frozen || B.confuseUsed || y.dead) return;
+  B.confuseUsed = true;
+  const r = d6();
+  if (r === 1) { f.cond.derp = true; log(`<b>Confusion:</b> ${esc(short(f))} rolls ${dice([r])} and confuses himself. He can't shoot this round and is -1 to hit. A moment later: <b>"${esc(f.sig.quote)}"</b>`); renderBattle(); return; }
+  const t = [d6(), d6()], ok = t[0] + t[1] <= y.Ld;
+  log(`<b>Confusion:</b> ${esc(short(f))} rolls ${dice([r])} and waves cheerfully at you like you're on his team. Leadership test: ${dice(t)} = ${t[0]+t[1]} vs Ld ${y.Ld}: ${ok ? "you shake it off." : "<b>you're Confused</b>: -1 to hit and no charging this round."}`);
+  if (!ok) y.cond.confused = true;
+  renderBattle();
 }
 // Halavere Blackraven's signature: a pool of shadows that leaves you -1 to hit this round.
 function sewDiscord(f, y){
@@ -1136,6 +1172,7 @@ async function moveFoe(){
   const f = B.foe, y = B.you;
   if (f.dead || f.cond.frozen) return;
   sewDiscord(f, y);
+  confusion(f, y);
   if (f.cond.pinned || f.cond.entangled) { log(`${esc(short(f))} is held fast.`); f.cond.pinned = f.cond.entangled = false; return; }
   const engaged = engagedNow();
   if (f.sig && f.sig.id === "pin") {
@@ -1197,7 +1234,8 @@ async function shootYou(){
 }
 async function shootFoe(){
   const f = B.foe, y = B.you;
-  if (B.pinSpent && f.bow && !f.dead && !engagedNow()) { log(`${esc(short(f))} spent this round's arrow pinning you.`); return; }
+  if (B.pinSpent && f.bow && !f.dead && !engagedNow()) { log(`${esc(short(f))} already loosed this round's arrow.`); return; }
+  if (f.cond.derp && f.bow) { log(`${esc(short(f))} is still working out which side he's on.`); return; }
   if (f.caster && !f.dead && !f.cond.frozen && !B.result && !engagedNow() && !f.cond.fellBack && !y.cond.frozen) {
     const los = gridLos(f, y), distIn = cheb(f, y)*2;
     if (los.clear && distIn <= 18) {
@@ -1353,7 +1391,7 @@ document.addEventListener("click", e => { const b = e.target.closest("#act butto
 function log(html, cls){ const l = $("#log"); if (!l || !html) return; const p = document.createElement("p"); if (cls) p.className = cls; p.innerHTML = html; l.prepend(p); }
 function fighterCard(m, color){
   const sv = saveTarget(m, {AP:0}), w = effWeapon(m, m.weapon);
-  const chips = [m.arm&&"Arm lost", m.leg&&"Leg lost", m.damaged&&"Armor Damaged", m.cond.frozen&&"Frozen", (m.cond.pinned||m.cond.entangled)&&"Held", m.cond.heat&&"Hot weapon", m.dead&&"In Nirvana"].filter(Boolean).map(c => `<span class="chip">${c}</span>`).join("") +
+  const chips = [m.arm&&"Arm lost", m.leg&&"Leg lost", m.damaged&&"Armor Damaged", m.cond.frozen&&"Frozen", (m.cond.pinned||m.cond.entangled)&&"Held", m.cond.heat&&"Hot weapon", m.dead&&"In Nirvana", m.cond.confused&&"Confused", m.cond.derp&&"Derp"].filter(Boolean).map(c => `<span class="chip">${c}</span>`).join("") +
     [m.cond.stoneskin&&"Stoneskin", m.cond.sanctuary&&"Sanctuary", m.sig && (m.sig.id === "discord" ? (B && B.shadow ? "Shadow pool open" : m.sig.name) : m.sig.id === "pin" ? (B && B.pinUsed ? m.sig.name + " spent" : m.sig.name + " ready") : m.sig.name)].filter(Boolean).map(c => `<span class="chip good">${c}</span>`).join("");
   return `<div class="fighter" style="--oc:${color}"><b>${esc(m.side==="you" ? m.name : short(m))}</b>
     <span>${m.side==="you" ? esc(title()) : m.knight ? ORDERS[m.order].name : m.fac==="hound" ? "Ashen Hound" : FACTION[m.fac][0] + (m.elite ? " · elite" : "")} · ${m.side==="you" && B && B.spec.kind==="duel" ? `tourney lives ${B.duelLives ?? 3}` : `lives ${m.lives}`}</span>
