@@ -169,7 +169,21 @@ export default [
   "order": "flame",
   "park": "Siar Geata",
   "belted": 2026,
-  "orkId": 23944
+  "orkId": 23944,
+  "signature": {
+   "name": "Pinning Arrow",
+   "cry": "Pinning Arrow!",
+   "quote": "I said stop moving.",
+   "when": "Reaction, once per round",
+   "loadout": "Bow (24\") and Single Short instead of the Spear",
+   "rules": [
+    "When an enemy declares a charge against Sir Rose Thorn or a friendly model within 6\" of her, she may react before it moves if the charger is within 24\" and visible: roll one bow hit at 4+ (-1 if the charger is in cover). No wound roll.",
+    "On a hit the charger is Pinned: the charge fails, it stays where it is and can't move again this round.",
+    "A door, not a siege weapon: until the end of the round, a Pinned model is impassable terrain for its own army.",
+    "Healers held: a Pinned model can't use healing abilities or healing spells this round.",
+    "Pocket window: she may use this even while engaged in melee. Cost: she can't shoot in her next Shoot phase."
+   ]
+  }
  },
  {
   "slug": "lady-bridget",
@@ -233,7 +247,21 @@ export default [
   "order": "serpent",
   "park": "Ethereal Hollow",
   "belted": 2023,
-  "orkId": 125451
+  "orkId": 125451,
+  "signature": {
+   "name": "Edge of Reach",
+   "cry": "Almost.",
+   "quote": "Almost.",
+   "when": "Always on",
+   "rules": [
+    "Enemies attacking Sir Spade in melee are -1 to hit, unless they charged him this round.",
+    "Stacks with Aimed Strike to -2, the most the rules allow."
+   ],
+   "upgrade": [
+    "\"Almost.\" (10 pts from his Knight budget)",
+    "When an enemy's melee attack against him misses with every die, he may immediately move 2\" (not into base contact)."
+   ]
+  }
  },
  {
   "slug": "halavere-blackraven",

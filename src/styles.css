@@ -99,3 +99,18 @@ details.entry dd{margin:0;white-space:pre-wrap}
 
 footer{border-top:1px solid var(--rule);padding-block:1.5rem;font-family:var(--sans);font-size:.85rem;color:var(--muted)}
 .notice{background:var(--paper);border:1px solid var(--rule);border-left:4px solid var(--or);padding:.8rem 1rem;border-radius:0 6px 6px 0;max-width:42rem}
+
+/* Knight cards: ORK heraldry and signature abilities */
+.khead{display:flex;gap:.75rem;align-items:center;margin-bottom:.2rem}
+.herald{width:4rem;height:4rem;flex:none;object-fit:contain;border-radius:6px;background:var(--bg);border:1px solid var(--rule)}
+.herald.fallback{display:grid;place-items:center;color:var(--oc)}
+.herald.fallback svg{width:2rem;height:2.4rem;opacity:.8}
+.has-sig{grid-column:span 2}
+@media (max-width:640px){.has-sig{grid-column:auto}}
+.sig{border-top:1px solid var(--rule);margin-top:.5rem;padding-top:.6rem}
+.signame{font-family:var(--display);font-weight:700;font-size:1.25rem;margin:.1rem 0 .3rem}
+.signame q{font-family:var(--body);font-style:italic;font-weight:400;font-size:1rem;color:var(--muted);margin-left:.3rem}
+.sig ul{margin:.3rem 0;padding-left:1.1rem;font-size:.94rem}
+.sig li{margin:.2rem 0}
+.sig p{margin:.3rem 0;font-family:var(--sans);font-size:.88rem}
+.grid:has(.has-sig){align-items:start}
