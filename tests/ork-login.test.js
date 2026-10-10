@@ -89,10 +89,14 @@ describe("ork headers", () => {
 });
 
 describe("roster", () => {
-  it("has 30 unique Knights", () => {
-    expect(roster).toHaveLength(30);
-    expect(new Set(roster.map((k) => k.slug)).size).toBe(30);
-    expect(new Set(roster.map((k) => k.orkId)).size).toBe(30);
+  it("has 30 Westmarch Knights plus the 4 Knights of Blackthorne, all unique", () => {
+    expect(roster.filter((k) => !k.expansion)).toHaveLength(30);
+    expect(roster.filter((k) => k.expansion === "crystal-grove").map((k) => k.slug).sort()).toEqual(["baron-cerberus-grimglaive", "onyx-wolfyre", "piper-lesonette", "ser-jynx-mercades"]);
+    expect(new Set(roster.map((k) => k.slug)).size).toBe(roster.length);
+    expect(new Set(roster.map((k) => k.orkId)).size).toBe(roster.length);
+  });
+  it("matches a Blackthorne Knight by ORK number", () => {
+    expect(matchKnight({ orkId: 19555, persona: "x" }).slug).toBe("baron-cerberus-grimglaive");
   });
   it("matches by ORK number first, then by persona", () => {
     expect(matchKnight({ orkId: 4098, persona: "anything" }).slug).toBe("downfall");

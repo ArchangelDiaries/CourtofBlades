@@ -4,6 +4,8 @@ import { ORDER_NAME } from "../data/content.js";
 import { useProgress } from "../lib/useProgress.js";
 
 const ORDERS = ["sword", "battle", "crown", "flame", "serpent"];
+const CORE = ROSTER.filter((k) => !k.expansion);
+const BLACKTHORNE = ROSTER.filter((k) => k.expansion === "crystal-grove");
 
 // The Knight's ORK heraldry, served through /api/ork-image. Falls back to an order shield.
 function Heraldry({ k }) {
@@ -33,6 +35,24 @@ function Signature({ s }) {
   );
 }
 
+function KnightCard({ k, done }) {
+  return (
+    <article className={`card order o-${k.order}${k.signature ? " has-sig" : ""}`}>
+      <div className="khead">
+        <Heraldry k={k} />
+        <div>
+          <div className="ordlab">{ORDER_NAME[k.order]}</div>
+          <div className="kname">{k.name}</div>
+        </div>
+      </div>
+      <p className="muted" style={{ margin: ".1rem 0 .5rem", fontFamily: "var(--sans)", fontSize: ".9rem" }}>{k.park}{k.guest || k.expansion ? ` · ${k.kingdom}` : ""}{k.belted ? ` · Belted ${k.belted}` : ""}</p>
+      {k.guest && <p className="ordlab" style={{ margin: "0 0 .4rem" }}>Guest Knight of note</p>}
+      {k.note && <p className="muted" style={{ margin: "0 0 .4rem", fontFamily: "var(--sans)", fontSize: ".85rem" }}>{k.note}</p>}
+      {k.signature ? <Signature s={k.signature} /> : done[k.slug] ? <span className="submitted">Ability submitted · in review</span> : <span className="waiting">Waiting for their ability</span>}
+    </article>
+  );
+}
+
 export default function Knights() {
   const done = useProgress();
   const ready = ROSTER.filter((k) => k.signature).length;
@@ -40,28 +60,25 @@ export default function Knights() {
     <>
       <p className="kicker">The roster</p>
       <h1>Knights of Westmarch</h1>
-      <p className="lede">The {ROSTER.length} named Knights who lead warbands in Court of Blades and Banners. {ready} signature abilit{ready === 1 ? "y is" : "ies are"} in the rules so far; heraldry comes from each Knight's ORK profile.</p>
+      <p className="lede">The {CORE.length} named Knights who lead warbands in Court of Blades and Banners. {ready} signature abilit{ready === 1 ? "y is" : "ies are"} in the rules so far; heraldry comes from each Knight's ORK profile.</p>
       {ORDERS.map((o) => (
         <section key={o}>
           <h2>{ORDER_NAME[o]}</h2>
           <div className="grid">
-            {ROSTER.filter((k) => k.order === o).map((k) => (
-              <article key={k.slug} className={`card order o-${k.order}${k.signature ? " has-sig" : ""}`}>
-                <div className="khead">
-                  <Heraldry k={k} />
-                  <div>
-                    <div className="ordlab">{ORDER_NAME[k.order]}</div>
-                    <div className="kname">{k.name}</div>
-                  </div>
-                </div>
-                <p className="muted" style={{ margin: ".1rem 0 .5rem", fontFamily: "var(--sans)", fontSize: ".9rem" }}>{k.park}{k.guest ? ` · ${k.kingdom}` : ""} · Belted {k.belted}</p>
-                {k.guest && <p className="ordlab" style={{ margin: "0 0 .4rem" }}>Guest Knight of note</p>}
-                {k.signature ? <Signature s={k.signature} /> : done[k.slug] ? <span className="submitted">Ability submitted · in review</span> : <span className="waiting">Waiting for their ability</span>}
-              </article>
-            ))}
+            {CORE.filter((k) => k.order === o).map((k) => <KnightCard key={k.slug} k={k} done={done} />)}
           </div>
         </section>
       ))}
+      {BLACKTHORNE.length > 0 && (
+        <section className="expansion">
+          <p className="kicker">Expansion · Invasion of the Crystal Grove</p>
+          <h2>Knights of Blackthorne</h2>
+          <p className="lede">Kingdom of the Crystal Groves. They lead the invasion in the expansion and can sign in to write their own signature abilities. <a href="/rules/#crystal-grove">Read the expansion rules</a>.</p>
+          <div className="grid">
+            {BLACKTHORNE.map((k) => <KnightCard key={k.slug} k={k} done={done} />)}
+          </div>
+        </section>
+      )}
     </>
   );
 }

@@ -7,6 +7,7 @@ export const STATUS = [
   { area: "Knight signature abilities", state: "collecting", note: "Knights submit their ability on this site" },
   { area: "Paragon profiles", state: "drafting", note: "Base profile set; class details in progress" },
   { area: "Character art", state: "drafting", note: "Player template graphics for each Knight" },
+  { area: "Expansion: Invasion of the Crystal Grove", state: "drafting", note: "Blackthorne faction, four Knights, crystal terrain, three scenarios" },
   { area: "Playtesting", state: "next", note: "Open playtests at Westmarch parks" },
 ];
 

@@ -184,6 +184,8 @@ tr.grp td{background:var(--wash);font-family:var(--sc);letter-spacing:.08em;font
 .map .lbA{fill:var(--azure);font-weight:700}.map .lbB{fill:var(--gules);font-weight:700}
 .map .arw{stroke:var(--ink);stroke-width:.45;fill:none;stroke-dasharray:1.2 .8}
 .map .flag{fill:var(--gules)}.map .flagA{fill:var(--azure)}
+.map .cry{fill:#8fd3d1;stroke:#2f6f72;stroke-width:.3}.map .thk{fill:#8fd3d1;opacity:.35;stroke:#2f6f72;stroke-width:.25;stroke-dasharray:.8 .5}
+.map .heart{fill:#c86fd0;stroke:var(--ink);stroke-width:.3}
 .map .rel{fill:var(--paper);stroke:var(--or);stroke-width:.45}
 
 /* roster */
@@ -229,6 +231,7 @@ tr.grp td{background:var(--wash);font-family:var(--sc);letter-spacing:.08em;font
       <li><a href="#paragons"><span>XIII</span>Paragons of Westmarch</a></li>
       <li><a href="#scenarios"><span>XIV</span>Scenarios</a></li>
       <li><a href="#ref"><span>XV</span>Reference Sheet</a></li>
+      <li><a href="#crystal-grove"><span>XVI</span>Expansion: Invasion of the Crystal Grove</a></li>
       <li><a href="#notes"><span>A</span>Playtest Notes</a></li>
     </ol>
   </details>
@@ -712,6 +715,38 @@ tr.grp td{background:var(--wash);font-family:var(--sc);letter-spacing:.08em;font
   </div>
 </section>
 
+<!-- XVI EXPANSION: INVASION OF THE CRYSTAL GROVE -->
+<section class="chapter prose" id="crystal-grove">
+  <header><span class="num">XVI</span><h2>Expansion: Invasion of the Crystal Grove</h2><p>The Knights of Blackthorne, from the Kingdom of the Crystal Groves, march through the singing grove on the border and into Westmarch. A faction, four Knights, new terrain and three invasion battlegames.</p></header>
+
+  <div class="note lore"><span class="lab">From the field</span><p>Every few seasons the old grove on the border wakes. Its crystals hum, the paths between the spires open, and Blackthorne marches through them. This season they have come for Westmarch's banners, and they've brought their Knights.</p></div>
+
+  <h3>The Blackthorne warband</h3>
+  <p>Blackthorne musters exactly like any warband (Chapter III): 500 points, the same troops, gear and magic. Its characters are the Knights of Blackthorne below. Until Blackthorne's own Paragons are added, it may field unnamed <span class="term">Champions of Blackthorne</span>, using the Paragon profile and cost from Chapter XIII.</p>
+  <ul>
+    <li><span class="term">Twin Flames:</span> Blackthorne may field both of its Knights of the Flame in one warband, an exception to the one-Knight-per-order limit. While Ser Jynx and Piper are within 6" of each other, friendly models within 6" of either one ignore a lost wound on a 5+ instead of a 6. This replaces their Eternal Flame rolls; it doesn't add to them.</li>
+    <li><span class="term">Grovewalkers:</span> Blackthorne models treat Crystal Thickets as open ground for movement and never suffer Shardcut. They still get cover inside them.</li>
+    <li><span class="term">The invaders:</span> in the expansion scenarios Blackthorne is always the Attacker and Westmarch the Defender.</li>
+  </ul>
+  <p><span class="term">Home ground:</span> when Westmarch defends in an expansion scenario, it may re-roll its General's morale test once per game.</p>
+
+  <h3>Crystal Grove terrain</h3>
+  <div class="tw"><table><thead><tr><th>Terrain</th><th>Type</th><th>Rules</th></tr></thead><tbody>
+    <tr><td><b>Crystal Spire</b></td><td>Impassable, 2–3" across</td><td>Blocks line of sight. <span class="term">Resonance:</span> a caster within 3" of a Spire gets +1 to cast rolls, whichever side it fights for.</td></tr>
+    <tr><td><b>Crystal Thicket</b></td><td>Area terrain and difficult ground, 4–6" across</td><td>Cover for models inside; half M. <span class="term">Shardcut:</span> a model that falls back out of or through a Thicket rolls a D6; on a 1 it takes a limb hit.</td></tr>
+    <tr><td><b>Heart Crystal</b></td><td>Objective marker (40mm)</td><td>The player who controls it gets Resonance for every caster within 6" of it.</td></tr>
+  </tbody></table></div>
+  <p>A Crystal Grove table uses 2–3 Spires and 2 Thickets, plus 2–3 ordinary terrain pieces.</p>
+
+  <h3>Knights of Blackthorne</h3>
+  <p>Four Knights of Blackthorne (Kingdom of the Crystal Groves) lead the invasion. Each uses the profile and abilities of their order from Chapter XII, with the usual 75 points and 50-point upgrade budget. Like Westmarch's Knights, they can sign in on this site and write a signature ability of their own. Source: <a href="https://ork.amtgard.com/orkui/index.php?Route=Reports/knights_list&amp;KingdomId=17">ORK Knights list, Kingdom of the Crystal Groves</a>.</p>
+  <div class="sheets" id="btSheets"></div>
+
+  <h3>Invasion scenarios</h3>
+  <p>Play these on a Crystal Grove table. Blackthorne is the Attacker; the common scenario rules from Chapter XIV apply.</p>
+  <div class="maps" id="btScenarioCards"></div>
+</section>
+
 <!-- NOTES -->
 <section class="chapter prose" id="notes">
   <header><span class="num">A</span><h2>Playtest Notes</h2><p>These are the rules most likely to need tuning. Check them first at the table.</p></header>
@@ -729,6 +764,7 @@ tr.grp td{background:var(--wash);font-family:var(--sc);letter-spacing:.08em;font
   <ul class="checks">
     <li>Signature abilities: 2 of 30 written (Sir Rose Thorn, Gravekeeper Sir Spade); the rest are collecting on the site</li>
     <li>A castle or keep siege scenario, with gates, walls and towers</li>
+    <li>Blackthorne's Paragons for the Crystal Grove expansion</li>
   </ul>
   <p class="colophon">Court of Blades and Banners · playtest rules · built for the Kingdom of Westmarch. Knight and Paragon rosters drawn from the Amtgard Online Record Keeper.</p>
 </section>
@@ -887,6 +923,34 @@ const SCN=[
   ["Setup","After deployment, players take turns placing 6 relic markers, each more than 8\" from any table edge and 6\" from other relics."],["Picking up","A model that ends a Move activation touching a relic picks it up and rolls a D6. 1: a trap; the model takes a limb hit and the relic is removed. 2–5: a relic worth 2 VP. 6: a Great Relic worth 3 VP."],["Carrying","A model can carry one relic. If the carrier is slain, the relic drops where it stood."],["Scoring","A relic scores when its carrier ends a Move activation within 8\" of its own edge. The relic is then removed."]]}
 ];
 
+
+/* ---------- expansion: Invasion of the Crystal Grove ---------- */
+// [order, name, park, belted, also belted, paragon of, orkId, note]
+const BT_KNIGHTS=[
+ ["flame","Ser Jynx Mercades","Blackthorne, Kingdom of the Crystal Groves",2008,"","",15427],
+ ["flame","Piper Lesonette","Blackthorne, Kingdom of the Crystal Groves",2019,"","",17474],
+ ["battle","Baron Cerberus Grimglaive of St. Beast","Blackthorne, Kingdom of the Crystal Groves",2025,"","",19555],
+ ["serpent","Onyx Wolfyre","Blackthorne, Kingdom of the Crystal Groves",2026,"","",22578,"Knight of the Serpent, to be belted in October 2026. Until then the ORK still lists Onyx as a Squire."]
+];
+const cry=(x,y,r=1.4)=>`<path class="cry" d="M${x} ${y-r*1.3}L${x+r} ${y-r*.3}L${x+r*.6} ${y+r}L${x-r*.6} ${y+r}L${x-r} ${y-r*.3}z"/>`;
+const thk=(x,y,w,h)=>`<rect class="thk" x="${x}" y="${y}" width="${w}" height="${h}" rx="1.5"/>`;
+const btZones=`<rect class="zB" x="0" y="0" width="48" height="8"/><rect class="zA" x="0" y="36" width="48" height="12"/><text class="lbB" x="1.2" y="2.6">Blackthorne edge (Attacker)</text><text class="lbA" x="1.2" y="47">Westmarch edge (Defender, 12" deep)</text>`;
+const btZones8=`<rect class="zB" x="0" y="0" width="48" height="8"/><rect class="zA" x="0" y="40" width="48" height="8"/><text class="lbB" x="1.2" y="2.6">Blackthorne edge (Attacker)</text><text class="lbA" x="1.2" y="47">Westmarch edge (Defender)</text>`;
+const BT_SCN=[
+ {d:"E1",name:"Through the Grove",rv:"Standard",flav:"Blackthorne tries to force its way through the grove and out the far side into Westmarch.",map:svgMap(btZones+thk(6,20,9,6)+thk(31,21,9,6)+cry(19,23)+cry(28,25)+cry(24,19,1.1)+`<path class="arw" d="M14 9 C 16 20, 18 28, 16 35"/><path class="arw" d="M34 9 C 32 20, 30 28, 32 35"/>`),rules:[
+  ["Setup","A Crystal Grove across the center: 2 Thickets and 2–3 Spires within 6\" of the center line. Westmarch deploys first, within 12\" of its edge; Blackthorne deploys within 8\" of the opposite edge."],
+  ["Breaking through","A Blackthorne model that ends a Move activation touching the Westmarch edge may leave the table and score: 1 VP for a troop, 2 for a Paragon, 3 for a Knight. It does not come back."],
+  ["Scoring","Westmarch scores its kill points as VP. The higher total after round 6 wins."]]},
+ {d:"E2",name:"Heart of the Grove",rv:"Unlimited",flav:"At the center of the grove the Heart Crystal sings, and whoever holds it holds the grove.",map:svgMap(btZones8+`<circle class="heart" cx="24" cy="24" r="1.4"/><text x="26" y="24.7">Heart Crystal</text>`+cry(17,17)+cry(31,17)+cry(17,31)+cry(31,31)+thk(4,21,7,6)+thk(37,21,7,6)),rules:[
+  ["Setup","The Heart Crystal sits in the center, with 4 Spires 9\" from it toward each corner and a Thicket on each flank. Both sides deploy within 8\" of their edges."],
+  ["Scoring","From round 2, in each End phase, the player who controls the Heart Crystal scores 2 VP. In round 6 it's worth 4 VP."],
+  ["Special","The Heart Crystal's Resonance (6\") goes to whoever controls it at the start of the Shoot phase."]]},
+ {d:"E3",name:"Banner Raid",rv:"Standard",flav:"Blackthorne didn't come for land. It came for Westmarch's banners.",map:svgMap(btZones+flag(12,38.5,"flagA")+flag(24,38.5,"flagA")+flag(36,38.5,"flagA")+cry(10,24)+cry(38,22)+thk(18,20,12,6)+`<path class="arw" d="M24 36 C 22 28, 26 18, 24 9"/>`),rules:[
+  ["Setup","Westmarch places 3 banners 10\" from its own edge, at least 10\" apart. A Thicket sits in the center and a Spire on each flank."],
+  ["Taking a banner","A Blackthorne model that ends a Move activation touching a banner picks it up. The carrier gets -2\" M and can't shoot or cast. If it is slain, the banner drops; a Westmarch model that ends a Move activation touching a dropped banner returns it to its stand."],
+  ["Scoring","Blackthorne scores 4 VP when a carrier ends a Move activation touching the Blackthorne edge; that banner is gone. Westmarch scores 1 VP in each End phase from round 3 for every banner still on its stand."]]}
+];
+
 /* ---------- render ---------- */
 // cover banners
 $("#coverBanners").innerHTML=["sword","battle","crown","flame","serpent"].map((k,i)=>`<svg viewBox="0 0 40 ${86+(i%2?10:0)}" class="o-${k}" style="color:var(--paper)"><rect x="0" y="0" width="40" height="3" rx="1" fill="var(--ink)"/><path d="M3 3h34v${70+(i%2?10:0)}l-17-11-17 11z" fill="var(--oc)"/><g transform="translate(8,${16+(i%2?4:0)})">${`<svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">${ICON[k]}</svg>`}</g></svg>`).join("");
@@ -911,7 +975,7 @@ const SIGS={"Sir Rose Thorn 가시 장미": {"name": "Pinning Arrow", "cry": "Pi
 const slug=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
 const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
 const shield='<svg viewBox="0 0 20 24" aria-hidden="true"><path class="fill" d="M10 1.5l7.5 2.8v6.6c0 5.6-3.7 9.6-7.5 11.6-3.8-2-7.5-6-7.5-11.6V4.3z" fill="currentColor" stroke="currentColor" stroke-width="1.6"/></svg>';
-$("#knightSheets").innerHTML=KNIGHTS.map(([k,name,park,yr,also,para,orkId])=>{
+const renderSheet=([k,name,park,yr,also,para,orkId,note])=>{
   const o=ORDERS[k], id=slug(name), sig=SIGS[name];
   const sigHtml=sig?`<div class="sig"><div class="ord">Signature ability · ${esc(sig.when)}</div><h5>${esc(sig.name)} <q>${esc(sig.quote)}</q></h5>${sig.loadout?`<p><b>Loadout:</b> ${esc(sig.loadout)}</p>`:""}<ul>${sig.rules.map(r=>`<li>${esc(r)}</li>`).join("")}</ul>${sig.upgrade?`<p><b>Upgrade, ${esc(sig.upgrade[0])}:</b> ${esc(sig.upgrade[1])}</p>`:""}</div>`:"";
   const art=orkId?`<img src="/api/ork-image?id=${orkId}&amp;kind=portrait" alt="${esc(name)}, from their ORK profile" loading="lazy" decoding="async" onload="this.classList.add('ok')" onerror="this.closest('.art').classList.remove('has-img');this.remove()">`:"";
@@ -921,11 +985,14 @@ $("#knightSheets").innerHTML=KNIGHTS.map(([k,name,park,yr,also,para,orkId])=>{
    <div class="body">
      <div class="ord">${o.name}</div>
      <h4>${esc(name)}</h4>
-     <p class="who"><span>${esc(park)}</span><span>Belted ${yr}</span><span>${o.role}</span></p>
+     <p class="who"><span>${esc(park)}</span>${yr?`<span>Belted ${yr}</span>`:""}<span>${o.role}</span></p>
      ${statStrip(o)}
      <ul>${o.abil.map(a=>`<li><b>${esc(a[0])}:</b> ${esc(a[1])}</li>`).join("")}<li><b>Heroic:</b> +1 Attack, Hit improves by 1, weapons and armor free. 2 Heroic Actions per game.</li></ul>${sigHtml}
+     ${note?`<p class="who" style="margin:.4rem 0 0">${esc(note)}</p>`:""}
      <div class="foot">${extra}<span class="lives" data-k="${id}"><i>Lives</i>${[0,1,2,3].map(n=>`<button type="button" data-n="${n}" aria-pressed="false" aria-label="Life ${n+1} of 4">${shield}</button>`).join("")}</span></div>
-   </div></article>`;}).join("");
+   </div></article>`;};
+$("#knightSheets").innerHTML=KNIGHTS.map(renderSheet).join("");
+$("#btSheets").innerHTML=BT_KNIGHTS.map(renderSheet).join("");
 document.querySelectorAll(".lives").forEach(el=>{
   const key="cbb-lives-"+el.dataset.k;
   const paint=spent=>el.querySelectorAll("button").forEach(b=>b.setAttribute("aria-pressed",String(+b.dataset.n<spent)));
@@ -937,7 +1004,7 @@ const fk=["all","sword","battle","crown","flame","serpent"];
 $("#kFilters").innerHTML=fk.map(k=>`<button type="button" data-f="${k}" aria-pressed="${k==="all"}">${k==="all"?"All "+KNIGHTS.length:ORDERS[k].short+" · "+KNIGHTS.filter(x=>x[0]===k).length}</button>`).join("");
 $("#kFilters").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const f=b.dataset.f;
   document.querySelectorAll("#kFilters button").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));
-  document.querySelectorAll(".sheet").forEach(s=>{s.hidden=!(f==="all"||s.dataset.order===f)});});
+  document.querySelectorAll("#knightSheets .sheet").forEach(s=>{s.hidden=!(f==="all"||s.dataset.order===f)});});
 
 // field abilities
 $("#fieldAbilities").innerHTML=FIELD.map(([c,rows])=>`<div class="fcard"><h4>${c}</h4><dl>${rows.map(r=>`<dt>${esc(r[0])}<span>${r[1]} pts</span></dt><dd>${esc(r[2])}</dd>`).join("")}</dl></div>`).join("");
@@ -947,6 +1014,8 @@ let last="";
 $("#paragonRows").innerHTML=PARAGONS.map(p=>{const first=p[0]!==last;last=p[0];return `<tr><td>${first?`<b>${p[0]}</b>`:""}</td><td>${esc(p[1])}</td><td>${esc(p[2])}</td><td class="c">${p[3]}</td></tr>`}).join("");
 
 // scenarios
+const scnCard=s=>`<article class="scn" id="scn-${String(s.d).toLowerCase()}"><div class="hd"><span class="d">${s.d}</span><h4>${s.name}</h4><span class="rv">Revives: ${s.rv}</span></div><p class="flav">${s.flav}</p>${s.map.replace('role="img"',`role="img" aria-label="Table map for ${s.name}"`)}<ul>${s.rules.map(r=>`<li><b>${r[0]}:</b> ${esc(r[1])}</li>`).join("")}</ul></article>`;
+$("#btScenarioCards").innerHTML=BT_SCN.map(scnCard).join("");
 $("#scenarioCards").innerHTML=SCN.map(s=>`<article class="scn" id="scn-${s.d}"><div class="hd"><span class="d">${s.d}</span><h4>${s.name}</h4><span class="rv">Revives: ${s.rv}</span></div><p class="flav">${s.flav}</p>${s.map.replace('role="img"',`role="img" aria-label="Table map for ${s.name}"`)}<ul>${s.rules.map(r=>`<li><b>${r[0]}:</b> ${esc(r[1])}</li>`).join("")}</ul></article>`).join("");
 
 // collapse contents on phones

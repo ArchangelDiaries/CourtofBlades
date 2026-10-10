@@ -1,4 +1,5 @@
-// The named Knights of Westmarch in Court of Blades and Banners.
+// The named Knights of Westmarch in Court of Blades and Banners, plus expansion Knights
+// (expansion: "crystal-grove" = the Knights of Blackthorne, Kingdom of the Crystal Groves, ORK KingdomId 17).
 // orkId values come from the ORK Knights report (KingdomId 21); spot-check them before launch.
 export default [
  {
@@ -270,5 +271,46 @@ export default [
   "park": "Belial Peaks",
   "belted": 2023,
   "orkId": 87728
+ },
+ {
+  "slug": "ser-jynx-mercades",
+  "name": "Ser Jynx Mercades",
+  "order": "flame",
+  "park": "Blackthorne",
+  "kingdom": "Kingdom of the Crystal Groves",
+  "belted": 2008,
+  "orkId": 15427,
+  "expansion": "crystal-grove"
+ },
+ {
+  "slug": "piper-lesonette",
+  "name": "Piper Lesonette",
+  "order": "flame",
+  "park": "Blackthorne",
+  "kingdom": "Kingdom of the Crystal Groves",
+  "belted": 2019,
+  "orkId": 17474,
+  "expansion": "crystal-grove"
+ },
+ {
+  "slug": "baron-cerberus-grimglaive",
+  "name": "Baron Cerberus Grimglaive of St. Beast",
+  "order": "battle",
+  "park": "Blackthorne",
+  "kingdom": "Kingdom of the Crystal Groves",
+  "belted": 2025,
+  "orkId": 19555,
+  "expansion": "crystal-grove"
+ },
+ {
+  "slug": "onyx-wolfyre",
+  "name": "Onyx Wolfyre",
+  "order": "serpent",
+  "park": "Blackthorne",
+  "kingdom": "Kingdom of the Crystal Groves",
+  "belted": 2026,
+  "orkId": 22578,
+  "expansion": "crystal-grove",
+  "note": "To be belted Knight of the Serpent in October 2026; until then the ORK still lists her as a Squire."
  }
 ];
