@@ -14,6 +14,7 @@ export const STATUS = [
 export const STATE_LABEL = { done: "Done", collecting: "Collecting", drafting: "In progress", next: "Up next" };
 
 export const FEATURES = [
+  { title: "Play it now", text: "A Season in Westmarch is a free browser RPG built on these rules: win back your park's banner, level your class to Paragon, and turn back Blackthorne's invasion. Open Play in the menu." },
   { title: "Limbs before lives", text: "Most wounds take an arm or a leg. Only a natural 6 or a heavy weapon strikes the body, just like on the field." },
   { title: "Back from Nirvana", text: "Every model has lives. The slain return to fight again, and losing your General for good can break the army's nerve." },
   { title: "Named Knights and Paragons", text: "Your warband is led by real Knights and Paragons of Westmarch, each with their own datasheet." },

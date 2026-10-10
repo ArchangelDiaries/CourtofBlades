@@ -1,0 +1,604 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Court of Blades: The Duel. Face any Knight of Westmarch one on one with the Court of Blades rules.">
+<title>Court of Blades: The Duel</title>
+</head>
+<body>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Grenze+Gotisch:wght@500;700&family=Alegreya:ital,wght@0,400;0,700;1,400&family=Alegreya+Sans:wght@400;500;700&family=Alegreya+Sans+SC:wght@500;700&display=swap">
+<style>
+/* Layout: duel arena. Two combatant cards flank a distance track; the battle log and the action bar sit below. */
+:root{
+  --bg:#E9EBE4; --paper:#F6F7F2; --ink:#1C2320; --muted:#58625C; --rule:#C6CABF; --wash:#DDE1D7;
+  --gules:#9C2A2C; --or:#9A7120; --azure:#2B4970; --vert:#3A6848; --flame:#B8531A; --argent:#5F6E79;
+  --display:"Grenze Gotisch",Georgia,serif; --body:"Alegreya",Georgia,serif;
+  --sans:"Alegreya Sans",system-ui,-apple-system,"Segoe UI",sans-serif; --sc:"Alegreya Sans SC","Alegreya Sans",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#111513; --paper:#181D1A; --ink:#E4E7DF; --muted:#9BA49D; --rule:#323A35; --wash:#212823;
+  --gules:#D8585C; --or:#D8AA4E; --azure:#86A7D8; --vert:#7FB28E; --flame:#EA8A4E; --argent:#A8B4BD; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111513; --paper:#181D1A; --ink:#E4E7DF; --muted:#9BA49D; --rule:#323A35; --wash:#212823;
+  --gules:#D8585C; --or:#D8AA4E; --azure:#86A7D8; --vert:#7FB28E; --flame:#EA8A4E; --argent:#A8B4BD; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:1.02rem;line-height:1.5}
+.wrap{max-width:64rem;margin:0 auto;padding-inline:1rem;padding-block:1.5rem 3rem}
+header{display:flex;flex-wrap:wrap;align-items:baseline;gap:.4rem 1rem;margin-bottom:1rem}
+.kicker{font-family:var(--sc);letter-spacing:.16em;font-size:.78rem;color:var(--gules);margin:0;width:100%}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(2rem,5vw,3rem);line-height:1;margin:0}
+button{font:inherit;font-family:var(--sc);letter-spacing:.06em;font-size:.92rem;border-radius:6px;padding:.55rem .95rem;cursor:pointer;border:1px solid var(--ink);background:var(--ink);color:var(--paper)}
+button.ghost{background:transparent;color:var(--ink);border-color:var(--rule)}
+button:disabled{opacity:.45;cursor:default}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid var(--or);outline-offset:2px}
+select,input[type=text]{width:100%;font:inherit;font-family:var(--sans);color:var(--ink);background:var(--bg);border:1px solid var(--rule);border-radius:6px;padding:.5rem .6rem}
+.card{background:var(--paper);border:1px solid var(--rule);border-radius:8px;padding:1rem;min-width:0}
+
+/* setup */
+.setup{display:grid;grid-template-columns:repeat(auto-fit,minmax(17rem,1fr));gap:1rem}
+.setup h2{font-family:var(--display);font-size:1.6rem;margin:0 0 .6rem}
+.field{display:grid;gap:.25rem;margin-bottom:.7rem;font-family:var(--sans);font-size:.92rem;font-weight:700}
+.hint{font-family:var(--sans);font-size:.88rem;color:var(--muted);font-weight:400;margin:.2rem 0 0}
+.diff{display:inline-block;font-family:var(--sc);font-size:.75rem;letter-spacing:.08em;border:1px solid currentColor;border-radius:999px;padding:0 .5rem;margin-left:.3rem}
+
+/* arena */
+.arena{display:grid;grid-template-columns:minmax(0,1fr) 9rem minmax(0,1fr);gap:.8rem;align-items:stretch}
+@media (max-width:720px){.arena{grid-template-columns:minmax(0,1fr)}.track{order:3}}
+.who{border-top:5px solid var(--oc,var(--azure))}
+.o-sword{--oc:var(--argent)}.o-battle{--oc:var(--gules)}.o-crown{--oc:var(--or)}.o-flame{--oc:var(--flame)}.o-serpent{--oc:var(--vert)}.o-you{--oc:var(--azure)}
+.who .lab{font-family:var(--sc);letter-spacing:.1em;font-size:.72rem;color:var(--oc);font-weight:700}
+.who .nm{font-family:var(--display);font-weight:700;font-size:1.45rem;line-height:1.05;margin:.1rem 0 .4rem}
+.bar{height:.6rem;border-radius:999px;background:var(--wash);overflow:hidden;margin:.3rem 0}
+.bar i{display:block;height:100%;background:var(--oc);transition:width .3s}
+.row{display:flex;flex-wrap:wrap;gap:.3rem;align-items:center}
+.stat{min-width:2.7rem;text-align:center;border:1px solid var(--rule);background:var(--bg);border-radius:4px;padding:.1rem .3rem;font-family:var(--sans)}
+.stat i{display:block;font-style:normal;font-family:var(--sc);font-size:.62rem;letter-spacing:.08em;color:var(--muted)}
+.stat b{font-size:.98rem;font-variant-numeric:tabular-nums}
+.chip{font-family:var(--sc);font-size:.72rem;letter-spacing:.06em;border-radius:999px;padding:.05rem .5rem;border:1px solid var(--rule);color:var(--muted)}
+.chip.bad{color:var(--gules);border-color:var(--gules)}
+.chip.good{color:var(--vert);border-color:var(--vert)}
+.lives{display:flex;gap:.2rem;margin:.35rem 0}
+.lives svg{width:1.05rem;height:1.25rem;color:var(--oc)}
+.lives .spent path{fill:transparent}
+.wpn{font-family:var(--sans);font-size:.88rem;color:var(--muted);margin:.3rem 0 0}
+.track{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.4rem;text-align:center}
+.track .dist{font-family:var(--display);font-size:2.4rem;line-height:1}
+.track .sub{font-family:var(--sc);font-size:.72rem;letter-spacing:.1em;color:var(--muted)}
+.track .lane{width:100%;height:.5rem;background:var(--wash);border-radius:999px;position:relative}
+.track .lane i{position:absolute;top:-.3rem;width:1.1rem;height:1.1rem;border-radius:50%;border:2px solid var(--paper);transition:left .3s}
+.round{font-family:var(--sans);font-size:.9rem;color:var(--muted)}
+
+.actions{margin-top:.9rem}
+.actions .prompt{font-family:var(--sans);font-weight:700;margin:0 0 .5rem}
+.actions .btns{display:flex;flex-wrap:wrap;gap:.45rem}
+.actions .btns button small{display:block;font-family:var(--sans);letter-spacing:0;font-size:.75rem;opacity:.8;text-transform:none}
+.log{margin-top:.9rem;max-height:26rem;overflow-y:auto;font-family:var(--sans);font-size:.93rem}
+.log p{margin:.25rem 0;padding:.25rem 0;border-bottom:1px dashed var(--rule)}
+.log p.phase{font-family:var(--sc);letter-spacing:.1em;font-size:.78rem;color:var(--gules);border:none;margin-top:.7rem}
+.log p.big{font-family:var(--display);font-size:1.3rem;border:none}
+.d{display:inline-grid;place-items:center;width:1.35rem;height:1.35rem;border:1px solid var(--rule);border-radius:4px;font-size:.8rem;font-weight:700;margin:0 1px;background:var(--bg);font-variant-numeric:tabular-nums}
+.d.ok{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.d.six{background:var(--gules);color:#fff;border-color:var(--gules)}
+.note{font-family:var(--sans);font-size:.88rem;color:var(--muted);margin-top:.6rem}
+@media (prefers-reduced-motion:reduce){.bar i,.track .lane i{transition:none}}
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="kicker"><a href="/" style="color:inherit">Court of Blades and Banners</a> · <a href="/play/" style="color:inherit">Play A Season in Westmarch</a></p>
+    <h1>The Duel</h1>
+  </header>
+  <div id="app"></div>
+</div>
+
+<script>
+(function(){
+/* ================= data ================= */
+const W = {
+  "Single Short":{A:3,hit:3,S:3,AP:0,D:1},
+  "Single Short + Shield":{A:2,hit:3,S:3,AP:0,D:1,shield:true},
+  "Dual Short":{A:4,hit:4,S:3,AP:0,D:1},
+  "Two-Handed Long":{A:2,hit:4,S:4,AP:-1,D:1,twoH:true},
+  "Great Weapon":{A:2,hit:4,S:5,AP:-2,D:2,twoH:true,breaker:true},
+  "Spear":{A:2,hit:4,S:4,AP:0,D:1,twoH:true,chargeHit:true},
+  "Flail":{A:3,hit:4,S:4,AP:0,D:1,wrap:true},
+  "Bow":{A:2,hit:3,S:3,AP:-1,D:1,twoH:true,range:24},
+};
+const MELEE = ["Single Short","Single Short + Shield","Dual Short","Two-Handed Long","Great Weapon","Spear","Flail"];
+const CLASSES = {
+  Warrior:{M:5,weapons:MELEE,armor:["Light","Heavy","Plate"],text:"Restore Armor: slaying the Knight repairs your Damaged armor."},
+  Barbarian:{M:6,weapons:MELEE,armor:["None","Light"],lethal:5,text:"Cleave: melee wound rolls of 5+ are Lethal."},
+  Archer:{M:5,weapons:["Single Short"],bow:true,armor:["None","Light"],text:"Bow (24\"). Special Arrows: once per round, Pinning (no move next activation) or Phase (ignores armor)."},
+  Assassin:{M:6,weapons:["Single Short","Dual Short"],armor:["None","Light"],lethal:5,text:"Poisoned Blade: melee wound rolls of 5+ are Lethal."},
+  Paladin:{M:5,weapons:MELEE,armor:["Light","Heavy","Plate"],ward:6,text:"Stalwart: 6+ ward."},
+  "Anti-Paladin":{M:5,weapons:MELEE,armor:["Light","Heavy","Plate"],steal:true,text:"Steal Life: slaying the Knight in melee regains you 1 W."},
+  Healer:{M:5,weapons:["Single Short","Single Short + Shield"],armor:["Light","Heavy","Plate"],heal:true,book:{"Greater Heal":4,"Sanctuary":2},text:"Heal: once per round, restore 1 W and a limb. Spells: Greater Heal ×4, Sanctuary ×2."},
+  Druid:{M:5,weapons:["Single Short","Spear"],armor:["None","Light"],book:{"Entangle":2,"Heat Weapon":2,"Stoneskin":1},text:"Spells: Entangle ×2, Heat Weapon ×2, Stoneskin ×1."},
+  Wizard:{M:5,weapons:["Single Short"],armor:["None"],book:{"Lightning Bolt":3,"Iceball":1,"Teleport":1},text:"Spells: Lightning Bolt ×3, Iceball ×1, Teleport ×1."},
+};
+const ARMOR = {None:null,Light:6,Heavy:5,Plate:4};
+const SPELLS = {
+  "Lightning Bolt":{cast:3,range:18,type:"ball",profile:{A:1,S:5,AP:-2,D:2},text:"18\" spellball S5 AP-2 D2"},
+  "Iceball":{cast:3,range:12,type:"enemy",text:"12\": Knight is Frozen until end of next round"},
+  "Teleport":{cast:4,range:0,type:"self",text:"Leap 12\" away, out of combat"},
+  "Entangle":{cast:3,range:12,type:"enemy",text:"12\": Knight can't move next activation"},
+  "Heat Weapon":{cast:3,range:12,type:"enemy",text:"12\": Knight's melee weapon A1 until end of next round"},
+  "Stoneskin":{cast:4,range:0,type:"self",touch:true,text:"Ignore the next wound you would lose"},
+  "Greater Heal":{cast:2,range:0,type:"self",touch:true,text:"Restore D3 W and limbs"},
+  "Sanctuary":{cast:3,range:0,type:"self",touch:true,text:"The Knight can't strike you in melee this round"},
+};
+const ORDERS = {
+  sword:{name:"Knight of the Sword",M:6,T:4,W:6,Ld:9,sv:4,ward:5,weapon:"Dual Short",diff:"Brutal",
+    abil:["Bladesong: +1 Attack, wound rolls of 5+ are Lethal","Master of the Blade: each melee hit roll you fail deals you a mortal wound","Sworn Duel: re-rolls failed wound rolls against you"]},
+  battle:{name:"Battle Knight",M:5,T:5,W:7,Ld:9,sv:4,ward:null,weapon:"Single Short + Shield",diff:"Hard",
+    abil:["Shieldwall: +1 Toughness (T6)","Anvil of the Line: you must pass a Leadership test to fall back"]},
+  crown:{name:"Knight of the Crown",M:5,T:4,W:6,Ld:10,sv:4,ward:null,weapon:"Two-Handed Long",diff:"Fair",
+    abil:["Decree (once): re-rolls failed hit rolls for a round"]},
+  flame:{name:"Knight of the Flame",M:5,T:4,W:6,Ld:9,sv:4,ward:null,weapon:"Spear",diff:"Fair",
+    abil:["Eternal Flame: ignores a lost wound on a 6"]},
+  serpent:{name:"Knight of the Serpent",M:6,T:4,W:5,Ld:9,sv:5,ward:5,weapon:"Flail",diff:"Tricky",
+    abil:["Serpent's Guile: once per round, forces you to re-roll a successful save","Masterwork: re-rolls wound rolls of 1"]},
+};
+const KNIGHTS = [
+ ["sword","Sir Zyax Blackraven"],["sword","Ashe Arala"],["sword","Sir Monkey"],["sword","Deimos"],["battle","Aust Valanthe"],
+ ["crown","Castings Uhn Grimlock Von Cream Puff"],["crown","Downfall"],["crown","Scoot"],["crown","Azus"],["crown","thistledown notagnome"],
+ ["flame","Baronet Sir Blackthorn"],["flame","Sir Furball"],["flame","Leah (SSD)"],["flame","Fiks von Grunwald"],["flame","Sir Kismet, the Privateer Caballero Augustus Rodriguez, the Navigator"],["flame","Mikezilla Darkwater"],["flame","Bacchus Springjaw"],["flame","Clenawe"],["flame","Evil Randy"],["flame","Milan of Amber"],["flame","Sir Rose Thorn 가시 장미"],["flame","Lady Bridget"],
+ ["serpent","Dame Elspeth Sharrisselva"],["serpent","Ailanthus Finvarra"],["serpent","Ohlanna De Mowbray, Lady"],["serpent","Ser Attano Sagax"],["serpent","Jacelendrahz"],["serpent","Dame Wendy the Wench"],["serpent","Gravekeeper Sir Spade the Laborious"],["serpent","Halavere Blackraven"]
+];
+
+/* ================= helpers ================= */
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+const d6 = () => 1 + Math.floor(Math.random()*6);
+const dice = (rolls, need, sixRed) => rolls.map(r => `<span class="d ${sixRed && r===6 ? "six" : (need && r>=need ? "ok" : "")}">${r}</span>`).join("");
+const store = { get(){ try{ return JSON.parse(localStorage.getItem("cbb-duel")||"null"); }catch(e){ return null; } }, set(v){ try{ localStorage.setItem("cbb-duel", JSON.stringify(v)); }catch(e){} } };
+const sleep = (ms) => new Promise(r => setTimeout(r, matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : ms));
+const short = (m) => m.name.split(",")[0];
+const nm = (m) => m.side === "you" ? "You" : esc(short(m));
+const v = (m, a, b) => m.side === "you" ? a : b;
+const poss = (m) => m.side === "you" ? "Your" : esc(short(m)) + "'s";
+function woundNeed(S, T){ if (S >= 2*T) return 2; if (S > T) return 3; if (S === T) return 4; if (S*2 <= T) return 6; return 5; }
+
+/* ================= state ================= */
+let G = null;
+function makeYou(cfg){
+  const c = CLASSES[cfg.cls];
+  const easy = cfg.diff === "story";
+  return { side:"you", name:cfg.name || "You", cls:cfg.cls, M:c.M, T:4, W:easy?6:5, maxW:easy?6:5, Ld:8, lives:easy?7:5, maxLives:easy?7:5,
+    weapon:cfg.weapon, bow:!!c.bow, baseSv:ARMOR[cfg.armor], armorName:cfg.armor, damaged:false, ward:c.ward||null,
+    lethal:c.lethal||null, steal:!!c.steal, heal:!!c.heal, restore:cfg.cls==="Warrior",
+    book: c.book ? {...c.book} : null, potion:easy?2:1, heroic:easy?2:1, arm:false, leg:false, cond:{}, oc:"you" };
+}
+function makeKnight(order, name){
+  const o = ORDERS[order];
+  return { side:"knight", name, order, M:o.M, T:o.T + (order==="battle"?1:0), W:o.W, maxW:o.W, Ld:o.Ld, lives:4, maxLives:4,
+    weapon:o.weapon, baseSv:o.sv, damaged:false, ward:o.ward, lethal: order==="sword" ? 5 : null,
+    heroic:2, decree: order==="crown" ? 1 : 0, arm:false, leg:false, cond:{}, oc:order };
+}
+
+/* ================= rules engine ================= */
+function effWeapon(m, name){
+  const base = W[name]; const w = {...base, name};
+  if (m.arm && (w.twoH || w.shield)) return { name:"Single Short (one arm)", A:1, hit:3, S:3, AP:0, D:1 };
+  if (m.arm) w.A = Math.max(1, w.A - 1);
+  if (m.side==="knight" && m.order==="sword" && name==="Dual Short") w.A += 1; // Bladesong
+  if (m.cond.heat && !w.range) w.A = 1;
+  w.A += 1; w.hit = Math.max(2, w.hit - 1); // Heroic
+  return w;
+}
+function saveTarget(def, wpn, phase){
+  let sv = def.baseSv;
+  if (sv != null && def.damaged) sv += 1;
+  if (sv != null && sv > 6) sv = null;
+  const dw = W[def.weapon];
+  const hasShield = dw && dw.shield && !def.arm;
+  if (hasShield && !(wpn.breaker || wpn.wrap)) sv = (sv == null) ? 6 : sv - 1;
+  if (sv == null) return null;
+  sv = sv - (wpn.AP || 0); // AP is negative: -2 makes 4+ into 6+
+  if (phase) return null;
+  sv = Math.max(2, sv);
+  return sv > 6 ? null : sv;
+}
+
+async function attack(att, def, wpn, opts = {}){
+  // opts: {melee, aimed:'arm'|'leg', spell, phase(bool ignores armor), charged}
+  if (def.cond.frozen) { log(`${nm(def)} ${v(def,"are","is")} frozen in ice and can't be struck.`); return; }
+  let need = wpn.hit;
+  let mods = 0;
+  if (opts.aimed) mods -= 1;
+  if (opts.chargeHit) mods += 1;
+  mods = Math.max(-2, mods);
+  const target = Math.min(6, Math.max(2, need - mods));
+  let hits = 0, rolls = [];
+  if (opts.spell) { hits = 1; }
+  else {
+    for (let i = 0; i < wpn.A; i++) rolls.push(d6());
+    // Crown Decree re-roll
+    if (att.cond.decree) rolls = rolls.map(r => (r < target && r !== 6) ? d6() : r);
+    hits = rolls.filter(r => r === 6 || (r !== 1 && r >= target)).length;
+    const misses = rolls.length - hits;
+    log(`${nm(att)} ${v(att,"strike","strikes")} with ${esc(wpn.name)}${opts.aimed ? ` (aimed at the ${opts.aimed})` : ""}: ${dice(rolls, target)} needs ${target}+, <b>${hits} hit${hits===1?"":"s"}</b>.`);
+    // Master of the Blade
+    if (opts.melee && def.side === "knight" && def.order === "sword" && misses > 0 && !def.dead) {
+      log(`<b>Master of the Blade:</b> ${esc(short(def))} punishes ${misses} miss${misses===1?"":"es"}.`);
+      for (let i = 0; i < misses && !att.dead; i++) await damage(att, { lethal:false, D:1, mortal:true, by:def });
+    }
+  }
+  if (!hits || att.dead) return;
+  const wNeed = woundNeed(wpn.S, def.T);
+  let wr = []; for (let i = 0; i < hits; i++) wr.push(d6());
+  // re-rolls: Sworn Duel (all fails), Masterwork (1s)
+  if (att.side === "knight" && att.order === "sword") wr = wr.map(r => r < wNeed ? d6() : r);
+  if (att.side === "knight" && att.order === "serpent") wr = wr.map(r => r === 1 ? d6() : r);
+  const wounds = wr.filter(r => r >= wNeed);
+  log(`To wound (S${wpn.S} vs T${def.T}): ${dice(wr, wNeed, true)} needs ${wNeed}+, <b>${wounds.length} wound${wounds.length===1?"":"s"}</b>.`);
+  for (const r of wounds) {
+    if (def.dead) break;
+    const lethal = r === 6 || wpn.D >= 2 || (opts.melee && att.lethal && r >= att.lethal);
+    // armor save
+    let sv = opts.phase ? null : saveTarget(def, wpn, false);
+    let saved = false;
+    if (sv != null) {
+      let s = d6();
+      let ok = s !== 1 && s >= sv;
+      if (ok && att.side === "knight" && att.order === "serpent" && !G.guileUsed) {
+        G.guileUsed = true; const s2 = d6();
+        log(`<b>Serpent's Guile:</b> ${esc(short(att))} forces a re-roll of your ${dice([s], sv)} save.`);
+        s = s2; ok = s !== 1 && s >= sv;
+      }
+      log(`${nm(def)} ${v(def,"save","saves")} on ${sv}+: ${dice([s], sv)} ${ok ? "<b>saved</b>." : "failed."}`);
+      if (ok) saved = true;
+      else if (def.baseSv != null && !def.damaged) { def.damaged = true; log(`${poss(def)} ${def.side==="you" ? esc(def.armorName.toLowerCase()) + " armor" : "plate"} is <b>Damaged</b>.`); }
+    }
+    if (saved) continue;
+    if (def.ward) { const w = d6(); if (w >= def.ward) { log(`Ward ${def.ward}+: ${dice([w], def.ward)} turns the blow aside.`); continue; } log(`Ward ${def.ward}+: ${dice([w], def.ward)} fails.`); }
+    await damage(def, { lethal, D:wpn.D, aimed:opts.aimed, by:att, melee:opts.melee });
+  }
+}
+
+async function damage(m, { lethal, D = 1, aimed, mortal, by, melee }){
+  if (m.dead) return;
+  if (m.cond.stoneskin) { m.cond.stoneskin = false; log(`<b>Stoneskin</b> absorbs the wound.`); return; }
+  let loss = lethal ? D + 1 : 1;
+  if (m.side === "knight" && m.order === "flame") {
+    let saved = 0, rolls = [];
+    for (let i = 0; i < loss; i++) { const r = d6(); rolls.push(r); if (r === 6) saved++; }
+    if (saved) { log(`<b>Eternal Flame:</b> ${dice(rolls, 6)} ignores ${saved} wound${saved===1?"":"s"}.`); loss -= saved; }
+    if (!loss) return;
+  }
+  if (lethal) {
+    log(`<b>LETHAL!</b> The blow strikes the body: ${nm(m)} ${v(m,"lose","loses")} ${loss} W.`);
+  } else {
+    const limb = aimed || (d6() <= 3 ? "arm" : "leg");
+    const already = m[limb];
+    m[limb] = true;
+    log(`${mortal ? "Mortal wound: " : ""}a <b>limb hit</b> to the ${limb}${already ? " (already lost)" : ""}. ${nm(m)} ${v(m,"lose","loses")} 1 W.`);
+    if (!already && limb === "leg") log(`${nm(m)} ${v(m,"drop","drops")} to one knee: M 2" and can't charge.`);
+    if (!already && limb === "arm") log(`${poss(m)} arm hangs useless.`);
+  }
+  m.W -= loss;
+  render();
+  await sleep(250);
+  if (m.W <= 0) await slain(m, by, melee);
+}
+
+async function slain(m, by, melee){
+  m.lives -= 1;
+  m.dead = true;
+  const other = m === G.you ? G.knight : G.you;
+  if (by && by.side === "you" && m.side === "knight") {
+    if (by.restore && by.damaged) { by.damaged = false; log(`<b>Restore Armor:</b> your armor is repaired.`); }
+    if (by.steal && melee && by.W < by.maxW) { by.W += 1; log(`<b>Steal Life:</b> you regain 1 W.`); }
+  }
+  if (m.lives <= 0) {
+    log(m.side === "knight" ? `${esc(short(m))} has no lives left. <b>You win the duel!</b>` : `You have no lives left. <b>${esc(short(other))} wins the duel.</b>`, "big");
+    G.over = true; render(); return;
+  }
+  log(`${nm(m)} ${v(m,"are","is")} slain and ${v(m,"walk","walks")} to Nirvana. ${m.lives} ${m.lives===1?"life":"lives"} left.`, "big");
+  G.pendingReturn = G.pendingReturn || []; G.pendingReturn.push(m);
+  render();
+}
+
+function returnFromNirvana(){
+  if (!G.pendingReturn || !G.pendingReturn.length) return;
+  for (const m of G.pendingReturn) {
+    m.dead = false; m.W = m.maxW; m.arm = false; m.leg = false; m.cond = {};
+    log(`${nm(m)} ${v(m,"return","returns")} from Nirvana, whole again.`);
+  }
+  G.pendingReturn = [];
+  G.dist = 12; G.engaged = false;
+  log(`The fighters reset 12" apart.`);
+}
+
+/* ================= turn flow ================= */
+function speed(m){ return m.leg ? 2 : m.M; }
+function canAct(m){ return !m.dead && !m.cond.frozen; }
+
+async function moveYou(){
+  const y = G.you;
+  if (!canAct(y)) { log(y.cond.frozen ? "You are frozen and can't move." : ""); return; }
+  if (y.cond.pinned || y.cond.entangled) { log("You can't move this activation."); y.cond.pinned = y.cond.entangled = false; return; }
+  const opts = [];
+  const sp = speed(y);
+  if (!G.engaged) {
+    if (G.dist <= sp && !y.leg && !G.knight.cond.frozen) opts.push(["charge", "Charge", `Into base contact (${G.dist}")`]);
+    if (G.dist > 1) opts.push(["advance", "Advance", `Close ${Math.min(sp, G.dist-1)}"`]);
+    opts.push(["hold", "Hold", "Stay where you are"]);
+    if (G.dist < 24) opts.push(["back", "Retreat", `Back off ${sp}"`]);
+  } else {
+    opts.push(["hold", "Stand and fight", "Stay engaged"]);
+    opts.push(["fall", "Fall back", `Disengage ${sp}"; no shooting or casting this round`]);
+  }
+  const c = await choose("Move phase: what do you do?", opts);
+  if (c === "charge") { G.dist = 0; G.engaged = true; G.charged = "you"; log(`You charge ${esc(short(G.knight))}!`); }
+  if (c === "advance") { const m = Math.min(sp, G.dist - 1); G.dist -= m; log(`You advance ${m}".`); }
+  if (c === "back") { G.dist = Math.min(24, G.dist + sp); log(`You retreat to ${G.dist}".`); }
+  if (c === "hold") log("You hold your ground.");
+  if (c === "fall") {
+    if (G.knight.order === "battle" && !G.knight.dead) {
+      const r = [d6(), d6()]; const ok = r[0] + r[1] <= y.Ld;
+      log(`<b>Anvil of the Line:</b> Leadership test ${dice(r)} = ${r[0]+r[1]} vs Ld ${y.Ld}: ${ok ? "you break away." : "you can't get free!"}`);
+      if (!ok) return;
+    }
+    G.engaged = false; G.dist = sp; y.cond.fellBack = true; log(`You fall back ${sp}".`);
+  }
+}
+
+async function moveKnight(){
+  const k = G.knight;
+  if (!canAct(k)) { if (k.cond.frozen) log(`${esc(short(k))} is frozen and can't move.`); return; }
+  if (k.cond.pinned || k.cond.entangled) { log(`${esc(short(k))} is held fast and can't move.`); k.cond.pinned = k.cond.entangled = false; return; }
+  if (G.engaged) { log(`${esc(short(k))} stands and fights.`); return; }
+  const sp = speed(k);
+  if (G.dist <= sp && !k.leg && !G.you.cond.frozen) { G.dist = 0; G.engaged = true; G.charged = "knight"; log(`${esc(short(k))} <b>charges</b>!`); }
+  else { const m = Math.min(sp, Math.max(0, G.dist - 1)); G.dist -= m; log(`${esc(short(k))} advances ${m}".`); }
+}
+
+async function shootYou(){
+  const y = G.you, k = G.knight;
+  if (!canAct(y) || G.over) return;
+  const opts = [];
+  const free = !G.engaged && G.charged !== "you" && !y.cond.fellBack;
+  if (free && y.bow && !y.arm && G.dist <= 24 && !k.cond.frozen) {
+    opts.push(["bow", "Loose an arrow", `Bow at ${G.dist}"`]);
+    if (!G.arrowUsed) { opts.push(["pin", "Pinning Arrow", "Bow; on a hit the Knight can't move next activation"]); opts.push(["phase", "Phase Arrow", "Bow; ignores armor saves"]); }
+  }
+  if (y.book && free) for (const [sp, n] of Object.entries(y.book)) {
+    const s = SPELLS[sp];
+    if (!n) continue;
+    if (s.range && G.dist > s.range) continue;
+    if (s.type !== "self" && k.cond.frozen) continue;
+    opts.push(["spell:" + sp, `Cast ${sp} (${n})`, `Cast ${s.cast}+: ${s.text}`]);
+  }
+  if (y.heal && !G.healUsed && (y.W < y.maxW || y.arm || y.leg)) opts.push(["heal", "Heal", "Restore 1 W and a limb"]);
+  if (y.potion && y.W < y.maxW) opts.push(["potion", "Drink Healing Potion", "Restore D3 W and limbs (${y.potion} left)"]);
+  if (!opts.length) return;
+  opts.push(["pass", "Do nothing", ""]);
+  const c = await choose("Shoot phase: your action?", opts);
+  if (c === "bow" || c === "pin" || c === "phase") {
+    if (c !== "bow") G.arrowUsed = true;
+    const before = k.W + k.lives * 100;
+    await attack(y, k, effWeapon(y, "Bow"), { phase: c === "phase" });
+    if (c === "pin" && k.W + k.lives * 100 < before) { k.cond.pinned = true; log(`The arrow pins ${esc(short(k))} in place.`); }
+  } else if (c.startsWith("spell:")) await castSpell(c.slice(6));
+  else if (c === "heal") { G.healUsed = true; restore(y, 1); log("You Heal yourself: 1 W and a limb restored."); }
+  else if (c === "potion") { y.potion--; const r = 1 + Math.floor(Math.random()*3); restore(y, r); log(`You drink the Healing Potion: <b>+${r} W</b>.`); }
+}
+
+function restore(m, n){
+  for (let i = 0; i < n; i++) { if (m.W < m.maxW) m.W++; if (m.leg) m.leg = false; else if (m.arm) m.arm = false; }
+  render();
+}
+
+async function castSpell(name){
+  const y = G.you, k = G.knight, s = SPELLS[name];
+  const r = d6();
+  if (r === 1) { y.book[name]--; log(`You cast ${name}: ${dice([r])} <b>fizzle!</b> The spell is lost.`); return; }
+  if (r < s.cast) { log(`You cast ${name}: ${dice([r], s.cast)} needs ${s.cast}+. Nothing happens, but you keep the spell.`); return; }
+  y.book[name]--;
+  log(`You cast <b>${name}</b>: ${dice([r], s.cast)} success!`);
+  if (name === "Lightning Bolt") await attack(y, k, { name:"Lightning Bolt", ...s.profile, hit:2 }, { spell:true });
+  if (name === "Iceball") { k.cond.frozen = 2; log(`${esc(short(k))} is encased in ice.`); }
+  if (name === "Teleport") { G.engaged = false; G.dist = Math.min(24, G.dist + 12); log(`You vanish and reappear ${G.dist}" away.`); }
+  if (name === "Entangle") { k.cond.entangled = true; log(`Roots and vines bind ${esc(short(k))}'s legs.`); }
+  if (name === "Heat Weapon") { k.cond.heat = 2; log(`${esc(short(k))}'s weapon glows red-hot (A1).`); }
+  if (name === "Stoneskin") { y.cond.stoneskin = true; log("Your skin hardens like stone."); }
+  if (name === "Greater Heal") { const n = 1 + Math.floor(Math.random()*3); restore(y, n); log(`Divine light restores <b>${n} W</b>.`); }
+  if (name === "Sanctuary") { y.cond.sanctuary = true; log("A circle of sanctuary surrounds you."); }
+  render();
+}
+
+async function fightYou(){
+  const y = G.you, k = G.knight;
+  if (!canAct(y) || !G.engaged || G.over || k.dead) return;
+  const opts = [];
+  if (!y.cond.sanctuary && !k.cond.frozen) {
+    opts.push(["strike", "Strike", `${esc(effWeapon(y, y.weapon).name)}: ${effWeapon(y, y.weapon).A} attacks`]);
+    opts.push(["arm", "Aimed strike: arm", "-1 to hit; limb hits take an arm"]);
+    opts.push(["leg", "Aimed strike: leg", "-1 to hit; limb hits take a leg"]);
+  }
+  if (y.book) for (const [sp, n] of Object.entries(y.book)) if (n && SPELLS[sp].touch) opts.push(["spell:" + sp, `Cast ${sp} (${n})`, `Instead of striking. ${SPELLS[sp].text}`]);
+  if (!opts.length) { log("You can't strike this round."); return; }
+  const c = await choose("Fight phase: how do you strike?", opts);
+  if (c.startsWith("spell:")) return castSpell(c.slice(6));
+  const w = effWeapon(y, y.weapon);
+  await attack(y, k, w, { melee:true, aimed: c === "strike" ? null : c, chargeHit: W[y.weapon].chargeHit && G.charged });
+}
+
+async function fightKnight(){
+  const k = G.knight, y = G.you;
+  if (!canAct(k) || !G.engaged || G.over || y.dead) return;
+  if (y.cond.sanctuary) { log(`${esc(short(k))} can't break your Sanctuary.`); return; }
+  if (y.cond.frozen) { log(`${esc(short(k))} can't strike you through the ice.`); return; }
+  if (k.decree && !k.cond.decree) { k.decree = 0; k.cond.decree = true; log(`<b>Decree!</b> ${esc(short(k))} commands: re-roll every failed hit this round.`); }
+  await attack(k, y, effWeapon(k, k.weapon), { melee:true, chargeHit: W[k.weapon].chargeHit && G.charged });
+}
+
+async function order(first, ya, ka){ if (first === "you") { await ya(); if (!G.over) await ka(); } else { await ka(); if (!G.over) await ya(); } }
+
+async function round(){
+  G.round++;
+  G.guileUsed = false; G.arrowUsed = false; G.healUsed = false; G.charged = null;
+  G.you.cond.fellBack = false;
+  log(`Round ${G.round}`, "phase");
+  returnFromNirvana();
+  // Priority
+  const a = d6(), b = d6();
+  let pri = a > b ? "you" : b > a ? "knight" : (G.lastPri === "you" ? "knight" : "you");
+  G.lastPri = pri;
+  log(`Priority: you ${dice([a])} vs ${esc(short(G.knight))} ${dice([b])}. <b>${pri === "you" ? "You" : esc(short(G.knight))}</b> act${pri==="you"?"":"s"} first.`);
+  render();
+  // Move
+  log("Move phase", "phase");
+  let first = pri;
+  if (pri === "knight" && G.you.heroic && canAct(G.you)) {
+    const h = await choose("The Knight has priority. Spend your Heroic Action to move first?", [["yes","Heroic Action","Act first this phase (1 per game)"],["no","Let them move first",""]]);
+    if (h === "yes") { G.you.heroic--; first = "you"; log("<b>Heroic Action!</b> You seize the moment."); }
+  }
+  await order(first, moveYou, moveKnight); render();
+  if (G.over) return end();
+  // Shoot
+  log("Shoot phase", "phase");
+  await shootYou(); render();
+  if (G.over) return end();
+  // Fight
+  if (G.engaged) {
+    log("Fight phase", "phase");
+    let f = G.charged || pri;
+    if (!G.charged && pri === "you" && G.knight.heroic && Math.random() < .6) { G.knight.heroic--; f = "knight"; log(`<b>Heroic Action!</b> ${esc(short(G.knight))} strikes first.`); }
+    else if (f === "knight" && G.you.heroic) {
+      const h = await choose(`${esc(short(G.knight))} strikes first. Spend your Heroic Action to strike first?`, [["yes","Heroic Action","Strike first (1 per game)"],["no","Take the blow",""]]);
+      if (h === "yes") { G.you.heroic--; f = "you"; log("<b>Heroic Action!</b> You strike first."); }
+    }
+    await order(f, fightYou, fightKnight); render();
+  }
+  // End
+  for (const m of [G.you, G.knight]) {
+    if (m.cond.frozen) { m.cond.frozen--; if (!m.cond.frozen) log(`The ice around ${m.side==="you"?"you":esc(short(m))} cracks and falls away.`); }
+    if (m.cond.heat) { m.cond.heat--; if (!m.cond.heat) log(`${poss(m)} weapon cools.`); }
+    m.cond.decree = false; m.cond.sanctuary = false;
+  }
+  render();
+  if (G.over) return end();
+  await choose("", [["next","Next round",""]]);
+  return round();
+}
+function end(){ render(); choose("The duel is over.", [["again","Duel again",""],["setup","Change fighters",""]]).then(c => c === "again" ? start(G.cfg) : setup()); }
+
+/* ================= UI ================= */
+let resolver = null;
+function choose(prompt, opts){
+  const box = $("#actions"); if (!box) return Promise.resolve(opts[0][0]);
+  box.innerHTML = `${prompt ? `<p class="prompt">${prompt}</p>` : ""}<div class="btns">${opts.map(([v, l, s], i) => `<button type="button" data-v="${esc(v)}" class="${i ? "ghost" : ""}">${l}${s ? `<small>${s}</small>` : ""}</button>`).join("")}</div>`;
+  box.querySelector("button")?.focus({ preventScroll:true });
+  return new Promise(res => { resolver = res; });
+}
+document.addEventListener("click", e => {
+  const b = e.target.closest("#actions button"); if (!b || !resolver) return;
+  const r = resolver; resolver = null; $("#actions").innerHTML = ""; r(b.dataset.v);
+});
+function log(html, cls){ if (!html) return; const l = $("#log"); if (!l) return; const p = document.createElement("p"); if (cls) p.className = cls; p.innerHTML = html; l.prepend(p); }
+
+const shield = '<svg viewBox="0 0 20 24" aria-hidden="true"><path d="M10 1.5l7.5 2.8v6.6c0 5.6-3.7 9.6-7.5 11.6-3.8-2-7.5-6-7.5-11.6V4.3z" fill="currentColor" stroke="currentColor" stroke-width="1.6"/></svg>';
+function card(m){
+  const sv = saveTarget(m, { AP:0 }, false);
+  const w = effWeapon(m, m.weapon);
+  const chips = [];
+  if (m.arm) chips.push(`<span class="chip bad">Arm lost</span>`);
+  if (m.leg) chips.push(`<span class="chip bad">Leg lost</span>`);
+  if (m.damaged) chips.push(`<span class="chip bad">Armor Damaged</span>`);
+  if (m.cond.frozen) chips.push(`<span class="chip bad">Frozen</span>`);
+  if (m.cond.entangled || m.cond.pinned) chips.push(`<span class="chip bad">Held</span>`);
+  if (m.cond.heat) chips.push(`<span class="chip bad">Hot weapon</span>`);
+  if (m.cond.stoneskin) chips.push(`<span class="chip good">Stoneskin</span>`);
+  if (m.cond.sanctuary) chips.push(`<span class="chip good">Sanctuary</span>`);
+  if (m.dead) chips.push(`<span class="chip bad">In Nirvana</span>`);
+  const label = m.side === "you" ? `Paragon ${m.cls}` : ORDERS[m.order].name;
+  const extra = m.side === "you"
+    ? `${m.potion ? `Healing Potion ×${m.potion} · ` : ""}Heroic Actions: ${m.heroic}${m.book ? " · " + Object.entries(m.book).map(([k,v]) => `${k} ${v}`).join(", ") : ""}`
+    : `Heroic Actions: ${m.heroic} · ${ORDERS[m.order].abil.map(a => a.split(":")[0]).join(", ")}`;
+  return `<div class="card who o-${m.oc}">
+    <div class="lab">${esc(label)}</div><div class="nm">${esc(m.name)}</div>
+    <div class="lives" aria-label="${m.lives} of ${m.maxLives} lives">${Array.from({length:m.maxLives},(_,i)=>`<span class="${i < m.lives ? "" : "spent"}">${shield}</span>`).join("")}</div>
+    <div class="bar" aria-label="${Math.max(0,m.W)} of ${m.maxW} wounds"><i style="width:${Math.max(0,m.W)/m.maxW*100}%"></i></div>
+    <div class="row">
+      <div class="stat"><i>W</i><b>${Math.max(0,m.W)}/${m.maxW}</b></div><div class="stat"><i>M</i><b>${speed(m)}"</b></div>
+      <div class="stat"><i>T</i><b>${m.T}</b></div><div class="stat"><i>Sv</i><b>${sv ? sv + "+" : "—"}</b></div>
+      <div class="stat"><i>Ward</i><b>${m.ward ? m.ward + "+" : "—"}</b></div>
+    </div>
+    <p class="wpn">${esc(w.name)}: A${w.A} · Hit ${w.hit}+ · S${w.S} · AP ${w.AP} · D${w.D}</p>
+    <p class="wpn">${esc(extra)}</p>
+    <div class="row" style="margin-top:.35rem">${chips.join("")}</div>
+  </div>`;
+}
+function render(){
+  if (!G || !$("#arena")) return;
+  const pos = G.engaged ? 50 : 50 - Math.min(24, G.dist) / 24 * 45;
+  $("#arena").innerHTML = `${card(G.you)}
+    <div class="card track"><div class="sub">Distance</div><div class="dist">${G.engaged ? "⚔" : G.dist + '"'}</div><div class="sub">${G.engaged ? "In combat" : "Apart"}</div>
+      <div class="lane"><i style="left:calc(${pos}% - .55rem);background:var(--azure)"></i><i style="left:calc(${100 - pos}% - .55rem);background:var(--oc-k)"></i></div>
+      <div class="round">Round ${G.round}</div></div>
+    ${card(G.knight)}`;
+  $("#arena").style.setProperty("--oc-k", getComputedStyle(document.documentElement).getPropertyValue("--" + ({sword:"argent",battle:"gules",crown:"or",flame:"flame",serpent:"vert"})[G.knight.order]));
+}
+
+function setup(){
+  G = null;
+  const saved = store.get() || {};
+  $("#app").innerHTML = `
+  <p style="max-width:44rem;margin:0 0 1rem">Step into the field as a rising Paragon and duel one of the named Knights of Westmarch. Everything runs on the tabletop rules: weapons decide your dice, wounds take limbs before lives, and the slain walk to Nirvana and come back. First to run out of lives loses.</p>
+  <div class="setup">
+    <div class="card"><h2>You</h2>
+      <label class="field">Your persona<input type="text" id="pname" maxlength="40" value="${esc(saved.name || "")}" placeholder="Your Amtgard name"></label>
+      <label class="field">Class<select id="pcls">${Object.keys(CLASSES).map(c => `<option${saved.cls===c?" selected":""}>${c}</option>`).join("")}</select></label>
+      <label class="field">Weapon<select id="pwpn"></select></label>
+      <label class="field">Armor<select id="parm"></select></label>
+      <label class="field">Difficulty<select id="pdiff"><option value="standard"${saved.diff!=="story"?" selected":""}>Standard: the tabletop rules as written</option><option value="story"${saved.diff==="story"?" selected":""}>Story: 7 lives, 6 W, 2 potions, 2 Heroic Actions</option></select></label>
+      <p class="hint" id="ptext"></p>
+      <p class="hint">Paragon profile: T4 · W5 · Ld8 · 5 lives · Heroic (+1 Attack, +1 to hit) · 1 Heroic Action · 1 Healing Potion.</p>
+    </div>
+    <div class="card"><h2>Your opponent</h2>
+      <label class="field">Knight<select id="kname">${["sword","battle","crown","flame","serpent"].map(o => `<optgroup label="${ORDERS[o].name} (${ORDERS[o].diff})">${KNIGHTS.filter(k => k[0]===o).map(k => `<option value="${esc(k[1])}"${saved.knight===k[1]?" selected":""}>${esc(k[1])}</option>`).join("")}</optgroup>`).join("")}</select></label>
+      <div id="ktext"></div>
+      <p class="hint">Knights have 4 lives, 2 Heroic Actions and plate armor.</p>
+    </div>
+  </div>
+  <p style="margin-top:1rem"><button type="button" id="go">Begin the duel</button></p>
+  <p class="note">Prototype for stage one of a Court of Blades RPG. Rules follow the playtest rulebook; the Aimed Strike is an RPG-only option.</p>`;
+  const sync = () => {
+    const c = CLASSES[$("#pcls").value];
+    const keepW = $("#pwpn").value, keepA = $("#parm").value;
+    $("#pwpn").innerHTML = c.weapons.map(w => `<option${(keepW||saved.weapon)===w?" selected":""}>${w}</option>`).join("");
+    $("#parm").innerHTML = c.armor.map(a => `<option${(keepA||saved.armor)===a?" selected":""}>${a}</option>`).join("");
+    $("#ptext").textContent = c.text + (c.bow ? "" : "");
+    const kn = KNIGHTS.find(k => k[1] === $("#kname").value); const o = ORDERS[kn[0]];
+    $("#ktext").innerHTML = `<p class="hint"><b>${o.name}</b><span class="diff" style="color:var(--gules)">${o.diff}</span><br>M${o.M}" · T${o.T + (kn[0]==="battle"?1:0)} · W${o.W} · Sv ${kn[0]==="battle"?"3+ (plate + shield)":o.sv+"+"}${o.ward?" · Ward "+o.ward+"+":""} · ${o.weapon}</p><ul class="hint" style="padding-left:1.1rem">${o.abil.map(a => `<li>${esc(a)}</li>`).join("")}</ul>`;
+  };
+  $("#pcls").addEventListener("change", () => { $("#pwpn").value = ""; $("#parm").value = ""; sync(); });
+  $("#kname").addEventListener("change", sync);
+  sync();
+  $("#go").addEventListener("click", () => {
+    const cfg = { name: $("#pname").value.trim() || "You", cls: $("#pcls").value, weapon: $("#pwpn").value, armor: $("#parm").value, knight: $("#kname").value, diff: $("#pdiff").value };
+    store.set(cfg); start(cfg);
+  });
+}
+
+function start(cfg){
+  const kn = KNIGHTS.find(k => k[1] === cfg.knight);
+  G = { cfg, you: makeYou(cfg), knight: makeKnight(kn[0], kn[1]), dist: 18, engaged:false, round:0, over:false };
+  $("#app").innerHTML = `<div class="arena" id="arena"></div><div class="card actions" id="actions" aria-live="polite"></div><div class="card log" id="log" aria-live="polite"></div>`;
+  render();
+  log(`${esc(G.you.name)} and ${esc(G.knight.name)} face each other across 18" of open field.`, "big");
+  round();
+}
+
+setup();
+})();
+</script>
+
+</body>
+</html>

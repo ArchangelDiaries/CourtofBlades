@@ -18,6 +18,7 @@ export default function App() {
             <NavLink to="/" end>Overview</NavLink>
             <NavLink to="/knights">Knights</NavLink>
             <a href="/rules/">Rules</a>
+            <a href="/play/">Play</a>
             <NavLink to="/ability">Your ability</NavLink>
             {s.isAdmin && <NavLink to="/admin">Review</NavLink>}
           </nav>

@@ -1,0 +1,1485 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="A Season in Westmarch: a Court of Blades and Banners RPG. Win back your park banner, level your class to Paragon, and turn back Blackthorne.">
+<title>A Season in Westmarch</title>
+</head>
+<body>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Grenze+Gotisch:wght@500;700&family=Alegreya:ital,wght@0,400;0,700;1,400&family=Alegreya+Sans:wght@400;500;700&family=Alegreya+Sans+SC:wght@500;700&display=swap">
+<style>
+/* Layout: a handheld-console column. Pixel canvas on top, a status strip above it, and the dialogue/battle panel below with touch controls. */
+:root{
+  --bg:#E9EBE4; --paper:#F6F7F2; --ink:#1C2320; --muted:#58625C; --rule:#C6CABF; --wash:#DDE1D7;
+  --gules:#9C2A2C; --or:#9A7120; --azure:#2B4970; --vert:#3A6848; --flame:#B8531A; --argent:#5F6E79;
+  --display:"Grenze Gotisch",Georgia,serif; --body:"Alegreya",Georgia,serif;
+  --sans:"Alegreya Sans",system-ui,-apple-system,"Segoe UI",sans-serif; --sc:"Alegreya Sans SC","Alegreya Sans",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#111513; --paper:#181D1A; --ink:#E4E7DF; --muted:#9BA49D; --rule:#323A35; --wash:#212823;
+  --gules:#D8585C; --or:#D8AA4E; --azure:#86A7D8; --vert:#7FB28E; --flame:#EA8A4E; --argent:#A8B4BD; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111513; --paper:#181D1A; --ink:#E4E7DF; --muted:#9BA49D; --rule:#323A35; --wash:#212823;
+  --gules:#D8585C; --or:#D8AA4E; --azure:#86A7D8; --vert:#7FB28E; --flame:#EA8A4E; --argent:#A8B4BD; color-scheme:dark}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:1rem;line-height:1.5}
+.wrap{max-width:52rem;margin:0 auto;padding-inline:1rem;padding-block:1.25rem 3rem}
+.kicker{font-family:var(--sc);letter-spacing:.16em;font-size:.76rem;color:var(--gules);margin:0}
+h1{font-family:var(--display);font-weight:700;font-size:clamp(1.9rem,5vw,2.8rem);line-height:1;margin:.1rem 0 .8rem}
+button{font:inherit;font-family:var(--sc);letter-spacing:.05em;font-size:.9rem;border-radius:6px;padding:.5rem .9rem;cursor:pointer;border:1px solid var(--ink);background:var(--ink);color:var(--paper)}
+button.ghost{background:transparent;color:var(--ink);border-color:var(--rule)}
+button:disabled{opacity:.45;cursor:default}
+button small{display:block;font-family:var(--sans);letter-spacing:0;font-size:.74rem;opacity:.8}
+button:focus-visible,select:focus-visible,input:focus-visible,canvas:focus-visible{outline:2px solid var(--or);outline-offset:2px}
+select,input[type=text]{width:100%;font:inherit;font-family:var(--sans);color:var(--ink);background:var(--bg);border:1px solid var(--rule);border-radius:6px;padding:.45rem .6rem}
+.card{background:var(--paper);border:1px solid var(--rule);border-radius:8px;padding:.9rem 1rem;min-width:0}
+.field{display:grid;gap:.2rem;margin-bottom:.65rem;font-family:var(--sans);font-size:.9rem;font-weight:700}
+.hint{font-family:var(--sans);font-size:.86rem;color:var(--muted);font-weight:400;margin:.2rem 0 0}
+.setup{display:grid;grid-template-columns:repeat(auto-fit,minmax(16rem,1fr));gap:1rem}
+.setup h2{font-family:var(--display);font-size:1.5rem;margin:0 0 .5rem}
+
+.hud{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem 1rem;font-family:var(--sans);font-size:.92rem;margin-bottom:.45rem}
+.hud .obj{flex:1;min-width:12rem}
+.hud .obj b{font-family:var(--sc);letter-spacing:.08em;font-size:.75rem;color:var(--gules);margin-right:.35rem}
+.hud .lives svg{width:.95rem;height:1.1rem;color:var(--azure);vertical-align:-2px}
+.hud .lives .spent path{fill:transparent}
+.screen{position:relative;border-radius:8px;overflow:hidden;border:3px solid var(--ink);background:#10140f;max-width:100%}
+canvas{display:block;width:100%;height:auto;aspect-ratio:256/176;image-rendering:pixelated;image-rendering:crisp-edges;touch-action:none;cursor:pointer}
+.panel{margin-top:.6rem;min-height:7.5rem}
+.panel .who{font-family:var(--sc);letter-spacing:.1em;font-size:.76rem;color:var(--gules);margin:0 0 .15rem;font-weight:700}
+.panel .say{margin:0 0 .6rem;font-size:1.02rem}
+.panel .prompt{font-family:var(--sans);font-weight:700;margin:0 0 .45rem}
+.btns{display:flex;flex-wrap:wrap;gap:.4rem}
+.fighters{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-bottom:.6rem}
+.fighter{font-family:var(--sans);font-size:.85rem;border-left:4px solid var(--oc,var(--azure));padding-left:.5rem;min-width:0}
+.fighter b{display:block;font-size:.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wbar{height:.45rem;background:var(--wash);border-radius:999px;overflow:hidden;margin:.2rem 0}
+.wbar i{display:block;height:100%;background:var(--oc,var(--azure))}
+.chip{display:inline-block;font-family:var(--sc);font-size:.7rem;letter-spacing:.05em;border-radius:999px;padding:0 .45rem;border:1px solid var(--gules);color:var(--gules);margin:.1rem .1rem 0 0}
+.chip.good{border-color:var(--vert);color:var(--vert)}
+.log{margin-top:.6rem;max-height:14rem;overflow-y:auto;font-family:var(--sans);font-size:.88rem}
+.log p{margin:.2rem 0;padding:.2rem 0;border-bottom:1px dashed var(--rule)}
+.log p.phase{font-family:var(--sc);letter-spacing:.1em;font-size:.74rem;color:var(--gules);border:none;margin-top:.5rem}
+.log p.big{font-family:var(--display);font-size:1.2rem;border:none}
+.d{display:inline-grid;place-items:center;width:1.25rem;height:1.25rem;border:1px solid var(--rule);border-radius:4px;font-size:.76rem;font-weight:700;margin:0 1px;background:var(--bg)}
+.d.ok{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.d.six{background:var(--gules);color:#fff;border-color:var(--gules)}
+.pad{display:flex;justify-content:space-between;align-items:center;gap:1rem;margin-top:.6rem;user-select:none;-webkit-user-select:none}
+.dpad{display:grid;grid-template-columns:repeat(3,3rem);grid-template-rows:repeat(3,3rem);gap:.2rem}
+.dpad button{padding:0;font-size:1.2rem;border-radius:8px}
+.dpad .u{grid-column:2;grid-row:1}.dpad .l{grid-column:1;grid-row:2}.dpad .r{grid-column:3;grid-row:2}.dpad .dn{grid-column:2;grid-row:3}
+.abtn{width:4.2rem;height:4.2rem;border-radius:50%;font-size:1.1rem;background:var(--gules);border-color:var(--gules);color:#fff}
+.keys{font-family:var(--sans);font-size:.82rem;color:var(--muted);text-align:center;flex:1}
+@media (hover:hover) and (pointer:fine){.pad .dpad,.pad .abtn{display:none}.pad{justify-content:center}}
+.end{text-align:center}
+.hud .lvl{display:inline-flex;align-items:center;gap:.35rem;white-space:nowrap}
+.hud .lvl b{font-family:var(--sc);letter-spacing:.06em;font-size:.82rem}
+.xpbar{display:inline-block;width:4.5rem;height:.45rem;background:var(--wash);border-radius:999px;overflow:hidden}
+.xpbar i{display:block;height:100%;background:var(--or)}
+.lvlup{color:var(--or)}
+.sheet h2{font-family:var(--display);font-size:1.6rem;margin:0 0 .2rem}
+.statrow{display:flex;flex-wrap:wrap;gap:.3rem;font-family:var(--sans);font-size:.88rem}
+.statrow span{border:1px solid var(--rule);border-radius:6px;padding:.1rem .45rem;background:var(--bg)}
+.perks{list-style:none;padding:0;margin:.4rem 0 .7rem;font-family:var(--sans);font-size:.88rem}
+.perks li{padding:.25rem 0 .25rem .6rem;border-left:3px solid var(--rule);margin:.2rem 0;color:var(--muted)}
+.perks li.got{border-color:var(--or);color:var(--ink)}
+#mini{display:block;width:100%;height:auto;aspect-ratio:96/58;image-rendering:pixelated;border:2px solid var(--ink);border-radius:6px;margin-top:.3rem}
+.end h2{font-family:var(--display);font-size:2rem;margin:.2rem 0}
+</style>
+
+<div class="wrap">
+  <p class="kicker"><a href="/" style="color:inherit">Court of Blades and Banners</a> · RPG · <a href="/play/duel/" style="color:inherit">Try The Duel</a></p>
+  <h1>A Season in Westmarch</h1>
+  <div id="app"></div>
+</div>
+
+<script>
+(function(){
+"use strict";
+/* ============================== data ============================== */
+const W = {
+  "Single Short":{A:3,hit:3,S:3,AP:0,D:1},
+  "Single Short + Shield":{A:2,hit:3,S:3,AP:0,D:1,shield:true},
+  "Dual Short":{A:4,hit:4,S:3,AP:0,D:1},
+  "Two-Handed Long":{A:2,hit:4,S:4,AP:-1,D:1,twoH:true},
+  "Great Weapon":{A:2,hit:4,S:5,AP:-2,D:2,twoH:true,breaker:true},
+  "Spear":{A:2,hit:4,S:4,AP:0,D:1,twoH:true,chargeHit:true},
+  "Flail":{A:3,hit:4,S:4,AP:0,D:1,wrap:true},
+  "Bow":{A:2,hit:3,S:3,AP:-1,D:1,twoH:true,range:24},
+};
+const MELEE = ["Single Short","Single Short + Shield","Dual Short","Two-Handed Long","Great Weapon","Spear","Flail"];
+const CLASSES = {
+  Warrior:{M:5,weapons:MELEE,armor:["Light","Heavy","Plate"],text:"Restore Armor: defeating a foe repairs your Damaged armor."},
+  Barbarian:{M:6,weapons:MELEE,armor:["None","Light"],lethal:5,text:"Cleave: melee wound rolls of 5+ are Lethal."},
+  Archer:{M:5,weapons:["Single Short"],bow:true,armor:["None","Light"],text:"Bow (24\"). Pinning and Phase arrows, once per round."},
+  Assassin:{M:6,weapons:["Single Short","Dual Short"],armor:["None","Light"],lethal:5,text:"Poisoned Blade: melee wound rolls of 5+ are Lethal."},
+  Paladin:{M:5,weapons:MELEE,armor:["Light","Heavy","Plate"],ward:6,text:"Stalwart: 6+ ward."},
+  "Anti-Paladin":{M:5,weapons:MELEE,armor:["Light","Heavy","Plate"],steal:true,text:"Steal Life: defeating a foe in melee regains 1 W."},
+  Healer:{M:5,weapons:["Single Short","Single Short + Shield"],armor:["Light","Heavy","Plate"],heal:true,book:{"Greater Heal":4,"Sanctuary":2},text:"Heal once per round. Spells: Greater Heal ×4, Sanctuary ×2 per battle."},
+  Druid:{M:5,weapons:["Single Short","Spear"],armor:["None","Light"],book:{"Entangle":2,"Heat Weapon":2,"Stoneskin":1},text:"Spells per battle: Entangle ×2, Heat Weapon ×2, Stoneskin ×1."},
+  Wizard:{M:5,weapons:["Single Short"],armor:["None"],book:{"Lightning Bolt":3,"Iceball":1,"Teleport":1},text:"Spells per battle: Lightning Bolt ×3, Iceball ×1, Teleport ×1."},
+};
+const TUNIC = {Warrior:"#8a3a2c",Barbarian:"#7a5a2a",Archer:"#3e6a3a",Assassin:"#3a3a48",Paladin:"#d8d2b8",
+  "Anti-Paladin":"#2a1e2a",Healer:"#e6e2d2",Druid:"#5a7a3a",Wizard:"#3a4a8a"};
+const ARMOR = {None:null,Light:6,Heavy:5,Plate:4};
+const SPELLS = {
+  "Lightning Bolt":{cast:3,range:18,type:"ball",profile:{A:1,S:5,AP:-2,D:2},text:"18\" spellball S5 AP-2 D2"},
+  "Iceball":{cast:3,range:12,type:"enemy",text:"12\": foe is Frozen until end of next round"},
+  "Teleport":{cast:4,range:0,type:"self",text:"Leap across the field, out of combat"},
+  "Entangle":{cast:3,range:12,type:"enemy",text:"12\": foe can't move next activation"},
+  "Heat Weapon":{cast:3,range:12,type:"enemy",text:"12\": foe's melee weapon A1 until end of next round"},
+  "Stoneskin":{cast:4,range:0,type:"self",touch:true,text:"Ignore the next wound you would lose"},
+  "Greater Heal":{cast:2,range:0,type:"self",touch:true,text:"Restore D3 W and limbs"},
+  "Sanctuary":{cast:3,range:0,type:"self",touch:true,text:"Foes can't strike you in melee this round"},
+};
+const ORDERS = {
+  sword:{name:"Knight of the Sword",M:6,T:4,W:6,Ld:9,sv:4,ward:5,weapon:"Dual Short",abil:["Bladesong","Master of the Blade","Sworn Duel"]},
+  battle:{name:"Battle Knight",M:5,T:5,W:7,Ld:9,sv:4,ward:null,weapon:"Single Short + Shield",abil:["Shieldwall","Anvil of the Line"]},
+  crown:{name:"Knight of the Crown",M:5,T:4,W:6,Ld:10,sv:4,ward:null,weapon:"Two-Handed Long",abil:["Decree"]},
+  flame:{name:"Knight of the Flame",M:5,T:4,W:6,Ld:9,sv:4,ward:null,weapon:"Spear",abil:["Eternal Flame"]},
+  serpent:{name:"Knight of the Serpent",M:6,T:4,W:5,Ld:9,sv:5,ward:5,weapon:"Flail",abil:["Serpent's Guile","Masterwork"]},
+};
+const ORDER_COLOR = {sword:"#9aa6ad",battle:"#9c2a2c",crown:"#c9a23a",flame:"#d0662a",serpent:"#3a7a4e"};
+const KNIGHTS = [
+ ["sword","Sir Zyax Blackraven"],["sword","Ashe Arala"],["sword","Sir Monkey"],["sword","Deimos"],["battle","Aust Valanthe"],
+ ["crown","Castings Uhn Grimlock Von Cream Puff"],["crown","Downfall"],["crown","Scoot"],["crown","Azus"],["crown","thistledown notagnome"],
+ ["flame","Baronet Sir Blackthorn"],["flame","Sir Furball"],["flame","Leah (SSD)"],["flame","Fiks von Grunwald"],["flame","Sir Kismet, the Privateer Caballero Augustus Rodriguez, the Navigator"],["flame","Mikezilla Darkwater"],["flame","Bacchus Springjaw"],["flame","Clenawe"],["flame","Evil Randy"],["flame","Milan of Amber"],["flame","Sir Rose Thorn 가시 장미"],["flame","Lady Bridget"],
+ ["serpent","Dame Elspeth Sharrisselva"],["serpent","Ailanthus Finvarra"],["serpent","Ohlanna De Mowbray, Lady"],["serpent","Ser Attano Sagax"],["serpent","Jacelendrahz"],["serpent","Dame Wendy the Wench"],["serpent","Gravekeeper Sir Spade the Laborious"],["serpent","Halavere Blackraven"]
+];
+// Rival warband troops (one life each in the overworld)
+const TROOPS = {
+  warrior:{label:"Hound Warrior",M:5,T:3,W:2,Ld:6,sv:5,weapon:"Single Short + Shield",tunic:"#5a4a3a"},
+  archer:{label:"Hound Archer",M:5,T:3,W:2,Ld:6,sv:6,weapon:"Single Short",bow:true,tunic:"#4a5a3a"},
+  barbarian:{label:"Hound Barbarian",M:6,T:3,W:3,Ld:6,sv:6,weapon:"Great Weapon",lethal:5,tunic:"#6a3a2a",xp:6,coin:3},
+  // The Marches
+  brigand:{label:"Greywood Brigand",fac:"brig",M:6,T:3,W:2,Ld:6,sv:6,weapon:"Dual Short",tunic:"#3e4a2a",hair:"#2e3a20",xp:4,coin:2},
+  brigArcher:{label:"Greywood Bowman",fac:"brig",M:5,T:3,W:2,Ld:6,sv:6,weapon:"Single Short",bow:true,tunic:"#4a5232",hair:"#2e3a20",xp:4,coin:2},
+  chief:{label:"Grell, Brigand Chief",fac:"brig",elite:true,hero:true,lives:2,M:6,T:4,W:3,Ld:8,sv:5,weapon:"Dual Short",lethal:5,tunic:"#2e3a20",hair:"#1e2a14",crest:"#c8a050",xp:25,coin:15},
+  sellsword:{label:"Sellsword",fac:"sell",M:5,T:4,W:3,Ld:7,sv:5,weapon:"Flail",tunic:"#6a5a4a",helm:"#7a7a7a",xp:8,coin:4},
+  spear:{label:"Thornwall Spearman",fac:"thorn",M:5,T:3,W:2,Ld:7,sv:5,weapon:"Spear",tunic:"#a8762a",helm:"#8a8a8a",xp:5,coin:2},
+  shield:{label:"Thornwall Shieldman",fac:"thorn",M:5,T:3,W:3,Ld:7,sv:5,weapon:"Single Short + Shield",tunic:"#a8762a",helm:"#8a8a8a",xp:6,coin:3},
+  bowman:{label:"Thornwall Bowman",fac:"thorn",M:5,T:3,W:2,Ld:7,sv:6,weapon:"Single Short",bow:true,tunic:"#b8863a",helm:null,xp:5,coin:2},
+  captain:{label:"Captain Marla of Thornwall",fac:"thorn",elite:true,hero:true,lives:2,M:5,T:4,W:4,Ld:9,sv:4,weapon:"Two-Handed Long",tunic:"#c8962a",helm:"#c8ccd0",crest:"#2b4970",xp:35,coin:20},
+  reaver:{label:"Darkwood Reaver",fac:"dark",M:5,T:4,W:3,Ld:8,sv:4,weapon:"Great Weapon",lethal:5,tunic:"#2a1e2a",helm:"#3a3a40",xp:10,coin:5},
+  blackguard:{label:"Darkwood Blackguard",fac:"dark",M:5,T:4,W:3,Ld:8,sv:4,weapon:"Flail",steal:true,tunic:"#3a1e2a",helm:"#3a3a40",xp:10,coin:5},
+  warlock:{label:"Darkwood Warlock",fac:"dark",M:5,T:3,W:2,Ld:8,sv:null,weapon:"Single Short",caster:2,tunic:"#4a2a6a",hair:"#1a1a1a",xp:10,coin:5},
+  warlord:{label:"Vane, Reaver Warlord",fac:"dark",elite:true,hero:true,lives:3,M:5,T:5,W:5,Ld:9,sv:4,ward:6,weapon:"Great Weapon",lethal:5,tunic:"#1e141e",helm:"#2a2a30",crest:"#9c2a2c",xp:50,coin:30},
+};
+// Invasion of the Crystal Grove: the Blackthorne warband (Kingdom of the Crystal Groves)
+Object.assign(TROOPS, {
+  thornblade:{label:"Blackthorne Thornblade",fac:"bt",M:5,T:4,W:3,Ld:8,sv:5,weapon:"Two-Handed Long",tunic:"#1f3d3e",helm:"#6a7a7a",xp:9,coin:4},
+  warden:{label:"Blackthorne Grove Warden",fac:"bt",M:5,T:4,W:3,Ld:8,sv:4,weapon:"Single Short + Shield",tunic:"#1f3d3e",helm:"#6a7a7a",xp:9,coin:4},
+  btArcher:{label:"Blackthorne Archer",fac:"bt",M:5,T:3,W:2,Ld:8,sv:6,weapon:"Single Short",bow:true,tunic:"#2f5f60",hair:"#1a1a1a",xp:8,coin:4},
+  seer:{label:"Blackthorne Crystal Seer",fac:"bt",M:5,T:3,W:2,Ld:8,sv:null,weapon:"Single Short",caster:2,tunic:"#5aa8a6",hair:"#e8e8f0",xp:10,coin:5},
+  btJynx:{label:"Ser Jynx Mercades",fac:"bt",elite:true,knight:["flame","Ser Jynx Mercades"],lives:3,xp:40,coin:20},
+  btPiper:{label:"Piper Lesonette",fac:"bt",elite:true,knight:["flame","Piper Lesonette"],lives:3,xp:40,coin:20},
+  btCerb:{label:"Baron Cerberus Grimglaive of St. Beast",fac:"bt",elite:true,knight:["battle","Baron Cerberus Grimglaive of St. Beast"],lives:3,xp:40,coin:20},
+  btOnyx:{label:"Onyx Wolfyre",fac:"bt",elite:true,knight:["serpent","Onyx Wolfyre"],lives:3,xp:40,coin:20},
+});
+const BT_KNIGHT_TYPES = ["btOnyx","btPiper","btJynx","btCerb"];
+TROOPS.warrior.xp = 4; TROOPS.warrior.coin = 2; TROOPS.archer.xp = 4; TROOPS.archer.coin = 2;
+const FACTION = {brig:["Greywood Brigands","#3e4a2a"], sell:["Sellsword","#6a5a4a"], thorn:["Thornwall Park","#a8762a"], dark:["Darkwood Reavers","#4a2a6a"], bt:["Blackthorne, Crystal Groves","#2f6f72"]};
+
+/* ============================== levels ============================== */
+// XP needed to reach each level (index = level).
+const LEVEL_XP = [0, 0, 12, 30, 60, 110, 180];
+const GENERIC_PERKS = {2:"+1 Wound", 4:"+1 Attack with every weapon", 5:"+1 Wound", 6:"Paragon: +1 Heroic Action per battle, Ld 9, +1 life"};
+const CLASS_PERKS = {
+  Warrior:{3:["Hardened","Toughness 5",y=>{y.T=5;}],5:["Improved Weapon","+1 Strength in melee",y=>{y.bonusS=1;}],6:["Battlemaster","Once per round, re-roll a failed armor save",y=>{y.battlemaster=true;}]},
+  Barbarian:{3:["Berserk","+1 Attack in melee while at half W or less",y=>{y.berserk=true;}],5:["Savage Cleave","Melee wound rolls of 4+ are Lethal",y=>{y.lethal=4;}],6:["Unstoppable","Start every battle with Stoneskin",y=>{y.rage=true;}]},
+  Archer:{3:["Longbow","Bow range 30\" and Strength 4",y=>{y.bowRange=30;y.bowS=4;}],5:["Volley","+1 Attack with the bow",y=>{y.bowA=1;}],6:["Deadeye","Bow wound rolls of 5+ are Lethal",y=>{y.deadeye=true;}]},
+  Assassin:{3:["Vanish","Teleport ×1 per battle",y=>{y.bookBase={...(y.bookBase||{}),Teleport:1};}],5:["Assassinate","Melee wound rolls of 4+ are Lethal",y=>{y.lethal=4;}],6:["Death Mark","+2 Attacks in a round you charge",y=>{y.deathMark=true;}]},
+  Paladin:{3:["Lay on Hands","Heal yourself once per round",y=>{y.heal=true;}],5:["Holy Ward","Ward improves to 5+",y=>{y.ward=5;}],6:["Smite","Once per battle, every wound from one strike is Lethal",y=>{y.smite=true;}]},
+  "Anti-Paladin":{3:["Terror","Foes are -1 to hit you in melee",y=>{y.terror=true;}],5:["Lethal Blows","Melee wound rolls of 5+ are Lethal",y=>{y.lethal=5;}],6:["Soul Harvest","Steal Life restores D3 W and a limb",y=>{y.soulHarvest=true;}]},
+  Healer:{3:["Bless","Stoneskin ×1 per battle",y=>{y.bookBase={...y.bookBase,Stoneskin:1};}],5:["Devotion","Greater Heal ×6, Sanctuary ×3",y=>{y.bookBase={...y.bookBase,"Greater Heal":6,Sanctuary:3};}],6:["Resurrect","Once per battle, rise at full W instead of losing a life",y=>{y.resurrect=true;}]},
+  Druid:{3:["Barkskin","6+ ward",y=>{y.ward=6;}],5:["Call Lightning","Lightning Bolt ×2 per battle",y=>{y.bookBase={...y.bookBase,"Lightning Bolt":2};}],6:["Regrowth","Regain 1 W or a limb at the start of every round",y=>{y.regen=true;}]},
+  Wizard:{3:["Adept","Lightning Bolt ×5, Iceball ×2",y=>{y.bookBase={...y.bookBase,"Lightning Bolt":5,Iceball:2};}],5:["Arcane Armor","Stoneskin ×1, Teleport ×2",y=>{y.bookBase={...y.bookBase,Stoneskin:1,Teleport:2};}],6:["Archmage","Every spell casts at -1 (min 2+)",y=>{y.archmage=true;}]},
+};
+function perksAt(cls, L){ const out = []; if (GENERIC_PERKS[L]) out.push(GENERIC_PERKS[L]); const c = CLASS_PERKS[cls][L]; if (c) out.push(`${c[0]}: ${c[1]}`); return out; }
+
+/* ============================== map ============================== */
+const MW = 96, MH = 58;
+const map = Array.from({length:MH}, () => Array(MW).fill("."));
+const rect = (x0,y0,x1,y1,c) => { for (let y=y0;y<=y1;y++) for (let x=x0;x<=x1;x++) map[y][x]=c; };
+const put = (x,y,c) => { map[y][x]=c; };
+const frame = (x0,y0,x1,y1,c) => { rect(x0,y0,x1,y0,c); rect(x0,y1,x1,y1,c); rect(x0,y0,x0,y1,c); rect(x1,y0,x1,y1,c); };
+function seeded(seed){ return () => { seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function buildMap(){
+  for (let y=0;y<MH;y++) for (let x=0;x<MW;x++) map[y][x]=".";
+  // ---- Chapter one: the home park (cols 0-39, rows 0-25) ----
+  rect(1,1,22,2,"%"); [[2,1],[6,2],[11,1],[15,2],[18,1],[22,2]].forEach(([x,y])=>put(x,y,"T"));
+  rect(24,1,26,24,"~"); rect(24,12,26,13,"="); rect(24,20,26,20,"-");
+  rect(3,3,7,5,"H");
+  rect(5,6,5,13,":"); rect(5,13,23,13,":"); rect(27,12,31,12,":");
+  rect(2,7,8,7,"#"); put(5,7,":");
+  put(12,12,"F");
+  rect(15,6,18,9,"^");
+  [[10,17],[14,21],[19,18],[7,19],[20,7],[21,4],[3,15],[16,23],[22,22],[11,4]].forEach(([x,y])=>put(x,y,"T"));
+  rect(17,16,18,17,"%"); rect(8,15,9,16,"%"); rect(19,21,21,23,"%");
+  rect(2,21,4,23,","); put(3,22,"N");
+  put(20,2,"C"); put(13,2,"."); put(19,2,".");
+  rect(28,2,33,3,"%"); rect(35,20,38,23,"%"); rect(36,2,38,4,"%");
+  [[29,6],[37,9],[28,16],[33,22],[30,24],[38,13]].forEach(([x,y])=>put(x,y,"T"));
+  [[30,5],[35,7],[31,18],[36,16],[29,9]].forEach(([x,y])=>put(x,y,"t"));
+  rect(32,10,36,10,"#"); rect(32,14,36,14,"#");
+  put(34,12,"B");
+  rect(29,20,31,22,"^");
+  rect(39,0,39,25,"T"); rect(0,25,39,25,"T");
+  rect(37,11,38,12,"."); rect(37,12,38,12,":"); put(39,11,"G"); put(39,12,"G");
+
+  // ---- The Marches ----
+  const R = seeded(1977);
+  for (let y=1;y<MH-1;y++) for (let x=1;x<MW-1;x++) {
+    if (x<=39 && y<=25) continue;
+    if (y >= 39) continue; // the Crystal Grove has its own seed below
+    const r = R(); if (r < .05) put(x,y,"T"); else if (r < .085) put(x,y,"%"); else if (r < .095) put(x,y,"^");
+  }
+  [[44,3,47,5],[69,9,72,10],[34,28,36,30],[46,34,49,36],[2,30,5,33]].forEach(([a,b,c,d]) => rect(a,b,c,d,"^"));
+  // Greywood (north-east forest)
+  for (let y=1;y<=10;y++) for (let x=62;x<MW-1;x++) { const r = R(); put(x,y, r < .4 ? "T" : r < .5 ? "%" : "."); }
+  // Lake
+  for (let y=15;y<=25;y++) for (let x=41;x<=55;x++) { const d = ((x-48)/5.5)**2 + ((y-20)/3.6)**2; if (d < 1) put(x,y,"~"); else if (d < 1.45) put(x,y,"%"); }
+  // Thornwall camp
+  rect(76,15,92,25,"."); frame(76,15,92,25,"#"); put(83,15,"."); put(84,15,"."); put(76,20,"."); put(76,21,".");
+  [[79,18],[79,23],[89,18],[89,23],[86,24]].forEach(([x,y])=>put(x,y,"t"));
+  // Darkwood keep (ruined)
+  rect(64,28,92,38,"s"); frame(64,28,92,38,"W");
+  for (let x=65;x<92;x++) { if (R() < .25) put(x,28,"r"); if (R() < .2) put(x,38,"r"); }
+  for (let y=29;y<38;y++) { if (R() < .2) put(92,y,"r"); }
+  put(64,32,"s"); put(64,33,"s");
+  frame(76,30,88,36,"W"); put(76,32,"s"); put(76,33,"s");
+  for (let y=29;y<=37;y++) for (let x=65;x<=91;x++) { if (map[y][x]==="s" && R() < .07) put(x,y,"r"); }
+  [[69,30],[69,36],[72,33]].forEach(([x,y])=>put(x,y,"W"));
+  // Field of Honor
+  rect(8,27,31,37,"."); frame(10,28,28,36,"#"); put(28,31,"."); put(28,32,"."); put(28,33,".");
+  [[10,28],[28,28],[10,36],[28,36]].forEach(([x,y])=>put(x,y,"f"));
+  // Waystation
+  rect(48,5,59,13,"."); rect(53,6,57,7,"H"); put(51,9,"P");
+  rect(49,14,51,16,","); put(50,15,"N");
+  // Old shrine by the keep road
+  rect(56,34,58,36,","); put(57,35,"N");
+  // Roads
+  rect(40,12,84,12,":"); rect(60,3,60,12,":"); rect(60,12,60,33,":"); rect(61,33,64,33,":"); rect(29,32,60,32,":"); rect(84,12,84,14,":");
+  // Greywood trail
+  let ty = 6; for (let x=61; x<=89; x++) { put(x,ty,"."); if (x%5===0) { const n = ty + (R()<.5?-1:1); if (n>=2 && n<=8) { put(x,n,"."); ty = n; } } }
+  rect(86,2,91,6,"."); rect(62,3,66,5,".");
+  // ---- Invasion of the Crystal Grove (rows 40-56) ----
+  rect(1,39,MW-2,39,"T"); put(44,39,"G"); put(45,39,"G");
+  const C = seeded(2610);
+  for (let y=40;y<MH-1;y++) for (let x=1;x<MW-1;x++) {
+    const r = C();
+    if (x>=20 && x<=70) put(x,y, r < .07 ? "X" : r < .2 ? "x" : "g");
+    else put(x,y, r < .05 ? "T" : r < .085 ? "%" : ".");
+  }
+  // Westmarch border outpost by the pass
+  rect(38,40,52,43,"."); put(48,41,"t"); put(51,41,"t"); rect(39,41,41,43,","); put(40,42,"N");
+  rect(44,33,44,38,":"); rect(44,40,44,46,":");
+  // A path through the grove, west to the Heart and east to the camp
+  for (let x=12;x<=74;x++) { put(x,47,"g"); if (map[46][x]==="X") put(x,46,"g"); if (map[48][x]==="X") put(x,48,"g"); }
+  // The Heart of the Grove
+  rect(4,43,19,55,"g"); put(12,49,"h"); [[8,45],[16,45],[8,53],[16,53]].forEach(([x,y])=>put(x,y,"X"));
+  // Blackthorne war camp
+  rect(72,42,93,56,"."); frame(74,44,92,55,"#"); put(74,49,"."); put(74,50,".");
+  [[77,46],[77,53],[89,46],[89,53],[82,54]].forEach(([x,y])=>put(x,y,"t")); put(86,49,"k");
+
+  // Borders
+  rect(0,0,MW-1,0,"T"); rect(0,MH-1,MW-1,MH-1,"T"); rect(0,0,0,MH-1,"T"); rect(MW-1,0,MW-1,MH-1,"T");
+  // Clear around every spawn and NPC so nobody starts boxed in
+  for (const e of ENEMY_SPEC) if (e.id[0]!=="e") for (let dy=-1;dy<=1;dy++) for (let dx=-1;dx<=1;dx++) { const t = map[e.y+dy]?.[e.x+dx]; if (t==="T"||t==="t"&&e.x>40) put(e.x+dx,e.y+dy, e.y>=40&&e.x>=4&&e.x<=70 ? "g" : e.y>=28&&e.y<39&&e.x>=64&&e.x<=92 ? "s" : "."); }
+  for (const n of NPCS) if (SOLID.has(map[n.y][n.x])) put(n.x,n.y,".");
+}
+const SOLID = new Set(["T","H","t","#","~","C","W","P","f","X","h","k"]);
+const LOS_BLOCK = new Set(["T","H","t","W","X","h"]);
+const COVER = new Set(["%","#","r","x"]);
+const DIFFICULT = new Set(["-","r","x"]);
+const RESONANT = new Set(["X","h"]);
+const tileAt = (x,y) => (y<0||y>=MH||x<0||x>=MW) ? "T" : map[y][x];
+
+/* ============================== art ============================== */
+const TS = 16, VW = 16, VH = 11; // view: 16x11 tiles at 16px
+let cv, cx;
+function hash(x,y){ let h = (x*374761393 + y*668265263) ^ 0x5bd1e995; h = (h ^ (h >>> 13)) * 1274126177; return ((h ^ (h >>> 16)) >>> 0) / 4294967295; }
+function px(x,y,w,h,c){ cx.fillStyle=c; cx.fillRect(x,y,w,h); }
+function drawTile(t, sx, sy, gx, gy){
+  const r = hash(gx,gy);
+  const grass = r < .5 ? "#5d8a3e" : "#58843a";
+  switch(t){
+    case "~": px(sx,sy,TS,TS,"#2f5f8f"); px(sx+((gx*5+gy*3+Math.floor(performance.now()/400))%12),sy+4+((gx+gy)%3)*4,4,1,"#7fb0d8"); break;
+    case "=": px(sx,sy,TS,TS,"#2f5f8f"); px(sx,sy+1,TS,14,"#8a6a42"); for(let i=0;i<4;i++) px(sx+i*4,sy+1,1,14,"#6a4e2e"); break;
+    case "-": px(sx,sy,TS,TS,"#4f86a8"); px(sx+3,sy+5,3,2,"#9cc6dc"); px(sx+10,sy+10,3,2,"#9cc6dc"); px(sx+8,sy+3,2,2,"#8a8a7a"); break;
+    case ":": px(sx,sy,TS,TS,"#b8a06a"); if(r>.6) px(sx+4,sy+9,2,2,"#9a8250"); if(r<.3) px(sx+11,sy+4,2,2,"#9a8250"); break;
+    case "H": px(sx,sy,TS,TS,"#7a4a2a"); px(sx,sy,TS,5,"#9c2a2c"); px(sx,sy+5,TS,1,"#5a2a1a"); px(sx+2,sy+8,4,4,"#e8c868"); px(sx+10,sy+8,4,4,"#e8c868"); break;
+    case "t": px(sx,sy,TS,TS,grass); cx.fillStyle = r<.5?"#c9b88a":"#b89a6a"; cx.beginPath(); cx.moveTo(sx+8,sy+1); cx.lineTo(sx+15,sy+14); cx.lineTo(sx+1,sy+14); cx.fill(); px(sx+7,sy+8,2,6,"#3a2a1a"); break;
+    case "#": px(sx,sy,TS,TS,grass); px(sx,sy+5,TS,2,"#8a6a42"); px(sx,sy+10,TS,2,"#8a6a42"); px(sx+2,sy+3,2,11,"#6a4e2e"); px(sx+12,sy+3,2,11,"#6a4e2e"); break;
+    case "T": px(sx,sy,TS,TS,grass); px(sx+6,sy+10,4,6,"#5a3a1e"); cx.fillStyle="#2f5a2a"; cx.beginPath(); cx.arc(sx+8,sy+7,7,0,7); cx.fill(); cx.fillStyle="#3e7a36"; cx.beginPath(); cx.arc(sx+6,sy+5,3.5,0,7); cx.fill(); break;
+    case "%": px(sx,sy,TS,TS,grass); cx.fillStyle="#3a6a30"; [[4,6],[11,5],[7,11],[13,12]].forEach(([a,b])=>{cx.beginPath();cx.arc(sx+a,sy+b,3.6,0,7);cx.fill();}); cx.fillStyle="#4e8a3c"; cx.beginPath(); cx.arc(sx+5,sy+5,1.6,0,7); cx.fill(); break;
+    case "^": px(sx,sy,TS,TS,"#7a9a4a"); px(sx+2,sy+11,12,1,"#5e7e36"); px(sx+5,sy+6,6,1,"#8eae5a"); break;
+    case ",": px(sx,sy,TS,TS,grass); px(sx+3,sy+4,2,2,"#e8d86a"); px(sx+11,sy+9,2,2,"#d86a8a"); px(sx+6,sy+12,2,2,"#e8e8e8"); break;
+    case "N": px(sx,sy,TS,TS,grass); px(sx+3,sy+12,10,3,"#8a8a8a"); px(sx+5,sy+3,6,10,"#b8b8c8"); px(sx+7,sy+5,2,6,"#e8e8ff"); px(sx+4,sy+2,8,2,"#9a9aa8"); break;
+    case "F": px(sx,sy,TS,TS,grass); px(sx+7,sy+2,2,13,"#5a3a1e"); if (state && state.flagHome) { px(sx+9,sy+2,6,5,"#2b4970"); px(sx+10,sy+3,2,2,"#e8c868"); } px(sx+5,sy+14,6,2,"#7a5a3a"); break;
+    case "B": px(sx,sy,TS,TS,"#7a6a4a"); px(sx+7,sy+2,2,13,"#5a3a1e"); if (state && !state.hasBanner && !state.flagHome) { px(sx+9,sy+2,6,5,"#2b4970"); px(sx+10,sy+3,2,2,"#e8c868"); } break;
+    case "C": px(sx,sy,TS,TS,grass); if (state && state.chestOpen) { px(sx+3,sy+7,10,7,"#5a3a1e"); px(sx+3,sy+5,10,2,"#3a2a1a"); } else { px(sx+3,sy+6,10,8,"#8a5a2a"); px(sx+3,sy+5,10,3,"#a86a32"); px(sx+7,sy+8,2,3,"#e8c868"); } break;
+    case "G": if (state && state.quest >= 4) { px(sx,sy,TS,TS,"#b8a06a"); px(sx,sy,3,TS,"#5a3a1e"); px(sx+13,sy,3,TS,"#5a3a1e"); } else { px(sx,sy,TS,TS,"#6a4a2a"); for (let i=0;i<4;i++) px(sx+1+i*4,sy,2,TS,"#8a6a42"); px(sx,sy+4,TS,2,"#3a2a1a"); px(sx,sy+11,TS,2,"#3a2a1a"); } break;
+    case "W": px(sx,sy,TS,TS,"#77756c"); px(sx,sy,TS,2,"#9a988e"); px(sx,sy+7,TS,1,"#55534c"); px(sx,sy+15,TS,1,"#55534c"); px(sx+(gy%2?4:10),sy+2,1,5,"#55534c"); px(sx+(gy%2?11:3),sy+8,1,7,"#55534c"); break;
+    case "s": px(sx,sy,TS,TS,r<.5?"#a39d8e":"#9d9788"); if (r>.7) px(sx+3,sy+5,5,1,"#8a8476"); if (r<.2) px(sx+9,sy+10,1,4,"#8a8476"); break;
+    case "r": px(sx,sy,TS,TS,"#9d9788"); cx.fillStyle="#6e6c64"; [[4,5,3],[11,9,3.5],[6,12,2.2]].forEach(([a,b,c])=>{cx.beginPath();cx.arc(sx+a,sy+b,c,0,7);cx.fill();}); px(sx+3,sy+3,2,1,"#b8b4a8"); break;
+    case "P": px(sx,sy,TS,TS,grass); px(sx+3,sy+9,2,7,"#5a3a1e"); px(sx+11,sy+9,2,7,"#5a3a1e"); px(sx+1,sy+2,14,8,"#8a6a42"); px(sx+3,sy+3,4,5,"#e8e2c8"); px(sx+9,sy+4,4,4,"#e8e2c8"); break;
+    case "g": px(sx,sy,TS,TS,r<.5?"#3f6e5a":"#3b6855"); if (r>.75) px(sx+(r*100%12|0),sy+((r*1000)%12|0),2,2,"#9fe0dc"); if (r<.12) px(sx+5,sy+10,1,1,"#e0f4f2"); break;
+    case "x": px(sx,sy,TS,TS,"#3b6855"); cx.fillStyle="#8fd3d1"; [[3,12,3,5],[8,13,2,8],[12,12,3,6]].forEach(([a,b,w,h])=>{cx.beginPath();cx.moveTo(sx+a,sy+b);cx.lineTo(sx+a+w/2,sy+b-h);cx.lineTo(sx+a+w,sy+b);cx.fill();}); px(sx+8,sy+6,1,3,"#e8fbfa"); break;
+    case "X": px(sx,sy,TS,TS,"#3b6855"); cx.fillStyle="#5fb6b4"; cx.beginPath(); cx.moveTo(sx+8,sy); cx.lineTo(sx+13,sy+6); cx.lineTo(sx+11,sy+15); cx.lineTo(sx+5,sy+15); cx.lineTo(sx+3,sy+6); cx.fill(); cx.fillStyle="#bdf0ee"; cx.beginPath(); cx.moveTo(sx+8,sy+1); cx.lineTo(sx+10,sy+6); cx.lineTo(sx+8,sy+13); cx.fill(); { const g = (Math.sin(performance.now()/500 + gx) + 1) / 2; if (g > .8) px(sx+7,sy+3,2,2,"#ffffff"); } break;
+    case "h": px(sx,sy,TS,TS,"#3b6855"); cx.fillStyle="#c86fd0"; cx.beginPath(); cx.moveTo(sx+8,sy); cx.lineTo(sx+15,sy+8); cx.lineTo(sx+8,sy+16); cx.lineTo(sx+1,sy+8); cx.fill(); cx.fillStyle="#f2c8f6"; cx.beginPath(); cx.moveTo(sx+8,sy+3); cx.lineTo(sx+11,sy+8); cx.lineTo(sx+8,sy+12); cx.fill(); break;
+    case "k": px(sx,sy,TS,TS,"#7a6a4a"); px(sx+7,sy+1,2,14,"#2a1e14"); px(sx+9,sy+2,6,6,"#1f3d3e"); px(sx+10,sy+3,4,4,"#8fd3d1"); break;
+    case "f": px(sx,sy,TS,TS,grass); px(sx+7,sy+1,2,15,"#5a3a1e"); px(sx+9,sy+2,6,3,"#9c2a2c"); px(sx+9,sy+5,4,2,"#9c2a2c"); break;
+    default: px(sx,sy,TS,TS,grass); if (r>.82) px(sx+(r*100%12|0),sy+((r*1000)%12|0),1,2,"#7aa84e"); if (r<.08) px(sx+6,sy+9,2,1,"#e8d86a");
+  }
+}
+// 8x8 humanoid, drawn at 2x: o outline, h hair/helm, s skin, b body, a arm/belt, l legs
+const MAN = ["..hhhh..",".hssssh.",".hssssh.","..bbbb..",".sbbbbs.",".sbaabs.","..l..l..","..l..l.."];
+function drawMan(sx, sy, look, face, step){
+  const pal = {h:look.hair||"#4a2e1a", s:look.skin||"#e0b48a", b:look.tunic, a:look.belt||"#3a2a1a", l:look.legs||"#3a3a3a"};
+  for (let y=0;y<8;y++) for (let x=0;x<8;x++) {
+    let c = MAN[y][face==="left" ? 7-x : x]; if (c===".") continue;
+    let yy = y; if (step && c==="l") yy += (x<4)===(step%2===0) ? 0 : -0.5;
+    px(sx+x*2, sy+yy*2, 2, 2, pal[c]);
+  }
+  if (look.helm) px(sx+4,sy,8,3,look.helm);
+  if (look.crest) px(sx+6,sy-2,4,2,look.crest);
+  // weapon
+  const wx = face==="left" ? sx-1 : sx+14;
+  if (look.bow) { cx.strokeStyle="#8a5a2a"; cx.lineWidth=1; cx.beginPath(); cx.arc(wx+(face==="left"?2:0), sy+9, 5, -1.2, 1.2); cx.stroke(); }
+  else if (look.weapon==="Great Weapon") { px(wx,sy+1,2,13,"#7a6a5a"); px(wx-2,sy+1,6,3,"#c8ccd0"); }
+  else if (look.weapon==="Spear"||look.weapon==="Two-Handed Long") { px(wx,sy,2,15,"#7a5a3a"); px(wx,sy-2,2,3,"#d8dce0"); }
+  else { px(wx,sy+5,2,7,"#c8ccd0"); px(wx-1,sy+10,4,1,"#7a5a3a"); }
+  if (look.shield) { const sx2 = face==="left" ? sx+12 : sx-3; px(sx2,sy+7,5,6,look.shieldColor||"#6a4a2a"); px(sx2+2,sy+8,1,4,"#c8a050"); }
+  if (look.banner) { px(sx+13,sy-6,1,12,"#5a3a1e"); px(sx+14,sy-6,5,4,"#2b4970"); px(sx+15,sy-5,2,2,"#e8c868"); }
+}
+
+
+/* ============================== state ============================== */
+let state = null;
+const SAVE_KEY = "cbb-season-1";
+const store = {
+  get(){ try { return JSON.parse(localStorage.getItem(SAVE_KEY) || "null"); } catch(e){ return null; } },
+  set(v){ try { localStorage.setItem(SAVE_KEY, JSON.stringify(v)); } catch(e){} },
+  clear(){ try { localStorage.removeItem(SAVE_KEY); } catch(e){} },
+};
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+const d6 = () => 1 + Math.floor(Math.random()*6);
+const sleep = (ms) => new Promise(r => setTimeout(r, matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : ms));
+const cheb = (a,b) => Math.max(Math.abs(a.x-b.x), Math.abs(a.y-b.y));
+
+function makeYou(cfg, level = 1){
+  const c = CLASSES[cfg.cls], easy = cfg.diff === "story";
+  const y = { side:"you", name:cfg.name || "You", cls:cfg.cls, level, hero:true, M:c.M, T:4, W:easy?6:5, maxW:easy?6:5, Ld:8,
+    lives:easy?7:5, maxLives:easy?7:5, weapon:cfg.weapon, bow:!!c.bow, baseSv:ARMOR[cfg.armor], armorName:cfg.armor,
+    damaged:false, ward:c.ward||null, lethal:c.lethal||null, steal:!!c.steal, heal:!!c.heal, restore:cfg.cls==="Warrior",
+    bookBase: c.book ? {...c.book} : null, book:null, potion:easy?2:1, heroicBase:easy?2:1, heroic:0, masterwork:false,
+    arm:false, leg:false, cond:{}, bonusA:0, bonusS:0,
+    look:{tunic:TUNIC[cfg.cls], weapon:cfg.weapon, shield:!!W[cfg.weapon].shield, shieldColor:"#2b4970", bow:!!c.bow, hair:"#3a2414", helm: ARMOR[cfg.armor] && ARMOR[cfg.armor] <= 5 ? "#9aa0a6" : null} };
+  if (level >= 2) y.maxW++;
+  if (level >= 4) y.bonusA = 1;
+  if (level >= 5) y.maxW++;
+  if (level >= 6) { y.heroicBase++; y.Ld = 9; y.maxLives++; y.paragon = true; y.look.crest = "#e8c868"; }
+  for (const L of [3,5,6]) if (level >= L) CLASS_PERKS[cfg.cls][L][2](y);
+  y.W = y.maxW; y.lives = y.maxLives;
+  return y;
+}
+const LOOKS = {};
+function makeTroop(type){
+  const t = TROOPS[type];
+  if (t.knight) {
+    const k = makeKnight(t.knight[0], t.knight[1], t.lives);
+    Object.assign(k, { type, fac:t.fac, elite:true, maxLives:t.lives });
+    k.look = LOOKS[type] || (LOOKS[type] = { ...k.look, tunic: t.knight[0] === "serpent" ? "#2f6f72" : k.look.tunic, shieldColor:"#2f6f72" });
+    return k;
+  }
+  if (!LOOKS[type]) LOOKS[type] = {tunic:t.tunic, weapon:t.weapon, shield:!!W[t.weapon].shield, shieldColor:t.fac==="thorn"?"#6a4a1a":t.fac==="dark"?"#2a1e2a":"#3a2a1a", bow:!!t.bow, hair:t.hair||"#2a2a2a", helm: "helm" in t ? t.helm : (t.hair ? null : "#5a5a5a"), crest:t.crest||null};
+  return { side:"foe", name:t.label, type, fac:t.fac||"hound", elite:!!t.elite, hero:!!t.hero, M:t.M, T:t.T, W:t.W, maxW:t.W, Ld:t.Ld, lives:t.lives||1, maxLives:t.lives||1, weapon:t.weapon, bow:!!t.bow,
+    baseSv:t.sv, damaged:false, ward:t.ward||null, lethal:t.lethal||null, steal:!!t.steal, caster:t.caster||0, heroic:0, arm:false, leg:false, cond:{},
+    look:LOOKS[type] };
+}
+// Signature abilities submitted by the Knights themselves.
+const SIGS = {
+  "Sir Rose Thorn 가시 장미": { id:"pin", name:"Pinning Arrow", quote:"I said stop moving.", weapon:"Single Short", bow:true,
+    text:"Reaction, once per round: when a foe charges, she looses a Pinning Arrow (5+ to hit, 6 into cover). On a hit the charge stops dead. It costs her next shot." },
+  "Gravekeeper Sir Spade the Laborious": { id:"reach", name:"Edge of Reach", quote:"Almost.",
+    text:"Always on: foes are -1 to hit him in melee, unless they charged him this round." },
+};
+function makeKnight(order, name, lives){
+  const o = ORDERS[order], sig = SIGS[name];
+  if (sig) { const k = makeKnightBase(order, name, lives, o); k.sig = sig; if (sig.weapon) { k.weapon = sig.weapon; k.bow = !!sig.bow; k.look = {...k.look, weapon:sig.weapon, bow:!!sig.bow, shield:false}; } return k; }
+  return makeKnightBase(order, name, lives, o);
+}
+function makeKnightBase(order, name, lives, o){
+  return { side:"foe", knight:true, hero:true, name, order, M:o.M, T:o.T + (order==="battle"?1:0), W:o.W, maxW:o.W, Ld:o.Ld,
+    lives: lives ?? 4, maxLives:4, weapon:o.weapon, baseSv:o.sv, damaged:false, ward:o.ward, lethal: order==="sword" ? 5 : null,
+    heroic:2, decree: order==="crown" ? 1 : 0, arm:false, leg:false, cond:{},
+    look:{tunic:ORDER_COLOR[order], weapon:o.weapon, shield:!!W[o.weapon].shield, shieldColor:ORDER_COLOR[order], helm:"#c8ccd0", crest:ORDER_COLOR[order], hair:"#2a2a2a"} };
+}
+
+const NPCS = [
+  {id:"holt", name:"Warmaster Holt", x:8, y:10, face:"left", look:{tunic:"#6a2a2a", weapon:"Two-Handed Long", helm:"#9aa0a6", crest:"#9c2a2c"}},
+  {id:"ilsa", name:"Healer Ilsa", x:3, y:9, face:"right", look:{tunic:"#e6e2d2", weapon:"Single Short", hair:"#a86a32"}},
+  {id:"rook", name:"Quartermaster Rook", x:8, y:6, face:"left", look:{tunic:"#7a5a2a", weapon:"Single Short", hair:"#6a6a6a"}},
+  {id:"wren", name:"Gatekeeper Wren", x:22, y:11, face:"right", look:{tunic:"#3a5a7a", weapon:"Spear", helm:"#7a7a7a"}},
+  {id:"pip", name:"Scout Pip", x:13, y:19, face:"right", look:{tunic:"#4a6a3a", weapon:"Single Short", hair:"#c89a5a"}},
+  // The Marches
+  {id:"corwin", name:"Guildmaster Corwin", x:54, y:9, face:"right", look:{tunic:"#2b4970", weapon:"Two-Handed Long", hair:"#d8d8d0", crest:"#e8c868"}},
+  {id:"tamsin", name:"Tamsin the Trader", x:57, y:9, face:"left", look:{tunic:"#8a3a6a", weapon:"Single Short", hair:"#a86a32"}},
+  {id:"aldous", name:"Brother Aldous", x:52, y:11, face:"right", look:{tunic:"#e6e2d2", weapon:"Single Short + Shield", hair:"#8a8a8a"}},
+  {id:"lark", name:"Lark the Minstrel", x:62, y:13, face:"left", look:{tunic:"#c8762a", weapon:"Single Short", hair:"#e8c868"}},
+  {id:"eda", name:"Border Warden Eda", x:46, y:42, face:"down", look:{tunic:"#2b4970", weapon:"Spear", helm:"#9aa0a6", crest:"#8fd3d1"}},
+  {id:"herald", name:"Herald Brannoc", x:30, y:31, face:"left", look:{tunic:"#9c2a2c", weapon:"Spear", helm:"#c8ccd0", crest:"#e8c868"}},
+];
+const SHRINES = [
+  {x:3, y:22, rx:3, ry:21, name:"your park's Nirvana shrine"},
+  {x:50, y:15, rx:50, ry:14, name:"the Waystation shrine"},
+  {x:57, y:35, rx:57, ry:34, name:"the old shrine by the Darkwood road"},
+  {x:40, y:42, rx:40, ry:41, name:"the Border Warden's shrine"},
+];
+const ENEMY_SPEC = [
+  {id:"e1", type:"warrior", x:28, y:13}, {id:"e2", type:"archer", x:31, y:8},
+  {id:"e3", type:"barbarian", x:31, y:15}, {id:"e4", type:"warrior", x:28, y:21},
+  // roads and open country
+  {id:"m1", type:"brigand", x:68, y:14}, {id:"m2", type:"brigArcher", x:44, y:28}, {id:"m3", type:"sellsword", x:62, y:24},
+  {id:"m4", type:"sellsword", x:38, y:34}, {id:"m5", type:"brigand", x:53, y:29}, {id:"m6", type:"brigand", x:46, y:8},
+  // Greywood
+  {id:"m7", type:"brigand", x:66, y:4}, {id:"m8", type:"brigand", x:73, y:6}, {id:"m9", type:"brigand", x:79, y:3},
+  {id:"m10", type:"brigand", x:83, y:7}, {id:"m11", type:"brigArcher", x:70, y:8}, {id:"m12", type:"brigArcher", x:76, y:4},
+  {id:"m13", type:"brigArcher", x:85, y:3}, {id:"m14", type:"chief", x:89, y:4},
+  // Thornwall
+  {id:"m15", type:"spear", x:80, y:13}, {id:"m16", type:"spear", x:82, y:19}, {id:"m17", type:"spear", x:87, y:17},
+  {id:"m18", type:"shield", x:80, y:17}, {id:"m19", type:"shield", x:88, y:21}, {id:"m20", type:"bowman", x:79, y:21},
+  {id:"m21", type:"bowman", x:90, y:16}, {id:"m22", type:"captain", x:84, y:22},
+  // Darkwood keep
+  {id:"m23", type:"reaver", x:66, y:30}, {id:"m24", type:"reaver", x:70, y:35}, {id:"m25", type:"reaver", x:73, y:30},
+  {id:"m26", type:"blackguard", x:68, y:33}, {id:"m27", type:"blackguard", x:74, y:36}, {id:"m28", type:"warlock", x:81, y:29},
+  {id:"m29", type:"warlock", x:90, y:33}, {id:"m30", type:"warlord", x:83, y:33},
+  // Invasion of the Crystal Grove
+  {id:"c1", type:"warden", x:30, y:45}, {id:"c2", type:"thornblade", x:35, y:51}, {id:"c3", type:"btArcher", x:25, y:49},
+  {id:"c4", type:"seer", x:50, y:53}, {id:"c5", type:"thornblade", x:56, y:45}, {id:"c6", type:"warden", x:62, y:51},
+  {id:"c7", type:"btArcher", x:66, y:54}, {id:"c8", type:"seer", x:22, y:54}, {id:"c9", type:"warden", x:79, y:48},
+  {id:"c10", type:"thornblade", x:88, y:51}, {id:"c11", type:"btArcher", x:80, y:52}, {id:"c12", type:"seer", x:90, y:47},
+  {id:"c13", type:"btOnyx", x:12, y:51}, {id:"c14", type:"btPiper", x:41, y:49}, {id:"c15", type:"btJynx", x:71, y:49}, {id:"c16", type:"btCerb", x:84, y:50},
+];
+const freshEnemies = () => ENEMY_SPEC.map(e => ({...e, hx:e.x, hy:e.y, alive:true, respawn: e.id[0]!=="e" && !TROOPS[e.type].elite}));
+
+function newState(cfg){
+  const kn = cfg.knight === "random" ? pickKnight() : KNIGHTS.find(k => k[1] === cfg.knight);
+  return { cfg, you: makeYou(cfg, 1), x:5, y:10, face:"down", quest:0, hasBanner:false, flagHome:false, chestOpen:false,
+    gotMasterwork:false, enemies: freshEnemies(), level:1, xp:0, coins:0, shrine:{x:3,y:21}, shrinesSeen:[0], bested:[], bounties:{},
+    bossOrder:kn[0], bossName:kn[1], bossLives:4, bossHere:false, wins:0, started:Date.now() };
+}
+function pickKnight(){ const fair = KNIGHTS.filter(k => k[0]==="crown" || k[0]==="flame"); return fair[Math.floor(Math.random()*fair.length)]; }
+function save(){
+  if (!state) return;
+  const y = state.you;
+  const { duelKnight, ...rest } = state;
+  store.set({ ...rest, you:{ W:y.W, lives:y.lives, arm:y.arm, leg:y.leg, damaged:y.damaged, potion:y.potion, masterwork:y.masterwork } });
+}
+function load(){
+  const s = store.get(); if (!s || !s.cfg) return null;
+  s.level = s.level || 1; s.xp = s.xp || 0; s.coins = s.coins || 0; s.shrine = s.shrine || {x:3,y:21};
+  s.shrinesSeen = s.shrinesSeen || [0]; s.bested = s.bested || []; s.bounties = s.bounties || {};
+  const have = new Set((s.enemies||[]).map(e => e.id));
+  s.enemies = (s.enemies||[]).concat(freshEnemies().filter(e => !have.has(e.id)));
+  const st = { ...s, you: makeYou(s.cfg, s.level) };
+  Object.assign(st.you, s.you);
+  return st;
+}
+
+/* ============================== objective & HUD ============================== */
+const btBested = () => BT_KNIGHT_TYPES.filter(k => state.bounties[k]).length;
+function objective(){
+  if (!state) return "";
+  const inv = state.quest >= 4 && !state.crystalDone ? ` Blackthorne has invaded through the Crystal Grove to the south (${btBested()} of 4 Knights bested).` : "";
+  if (state.quest === 4) return `The east gate is open. Explore the Marches and earn your way to level 6, Paragon.${inv}`;
+  if (state.quest >= 5) return `Paragon ${state.you.cls}. Clear the Guild's bounties and best the Knights at the Field of Honor (${state.bested.length} bested).${inv}`;
+  return ["Talk to Warmaster Holt by the hall.","Cross the river and take back the park banner from the Hounds' camp.","Carry the banner home and plant it on the flag stand.","Hold the field against the Knight."][state.quest] || "";
+}
+const shieldSvg = '<svg viewBox="0 0 20 24" aria-hidden="true"><path d="M10 1.5l7.5 2.8v6.6c0 5.6-3.7 9.6-7.5 11.6-3.8-2-7.5-6-7.5-11.6V4.3z" fill="currentColor" stroke="currentColor" stroke-width="1.6"/></svg>';
+function title(){ return state.level >= 6 ? `Paragon ${state.you.cls}` : `Level ${state.level} ${state.you.cls}`; }
+function hud(){
+  const h = $("#hud"); if (!h || !state) return;
+  const y = state.you, L = state.level;
+  const next = L < 6 ? LEVEL_XP[L+1] : null;
+  h.innerHTML = `<span class="obj"><b>Quest</b>${esc(objective())}</span>
+    <span class="lives" aria-label="${y.lives} of ${y.maxLives} lives">${Array.from({length:y.maxLives},(_,i)=>`<span class="${i<y.lives?"":"spent"}">${shieldSvg}</span>`).join("")}</span>
+    <span>W ${Math.max(0,y.W)}/${y.maxW}${y.arm?" · arm lost":""}${y.leg?" · leg lost":""}${y.damaged?" · armor damaged":""} · potions ${y.potion} · ${state.coins} coin</span>
+    <span class="lvl"><b>${esc(title())}</b> <span class="xpbar" aria-label="${next ? `${state.xp} of ${next} XP` : "max level"}"><i style="width:${next ? Math.min(100, (state.xp - LEVEL_XP[L]) / (next - LEVEL_XP[L]) * 100) : 100}%"></i></span> ${next ? `${state.xp}/${next} XP` : `${state.xp} XP`}</span>`;
+}
+
+/* ============================== world ============================== */
+let mode = "world";
+let anim = { moving:false, fx:0, fy:0, t0:0, from:null };
+let bangs = [];
+const held = new Set();
+let lastWander = 0;
+const DIRS = {up:[0,-1], down:[0,1], left:[-1,0], right:[1,0]};
+const RESPAWN_MS = 75000;
+
+function occupied(x,y){
+  if (NPCS.some(n => n.x===x && n.y===y)) return true;
+  if (state.enemies.some(e => e.alive && e.x===x && e.y===y)) return true;
+  if (state.bossHere && state.boss && state.boss.x===x && state.boss.y===y) return true;
+  if (state.duelKnight && state.duelKnight.x===x && state.duelKnight.y===y) return true;
+  return false;
+}
+const gateShut = (x,y) => tileAt(x,y) === "G" && state.quest < 4;
+function walkable(x,y){ return !SOLID.has(tileAt(x,y)) && !gateShut(x,y) && !occupied(x,y); }
+function bridgeLocked(x,y){ return state.quest === 0 && ((x>=24 && x<=26) && (tileAt(x,y)==="=" || tileAt(x,y)==="-")); }
+
+function tryStep(dir){
+  if (anim.moving || mode !== "world") return;
+  state.face = dir === "up" || dir === "down" ? (dir==="up" ? "up" : "down") : dir;
+  state.lr = dir === "left" ? "left" : dir === "right" ? "right" : (state.lr || "right");
+  const [dx,dy] = DIRS[dir]; const nx = state.x+dx, ny = state.y+dy;
+  if (bridgeLocked(nx,ny)) { say([{who:"Gatekeeper Wren", text:"Hold up! Warmaster Holt wants a word before anyone crosses."}]); return; }
+  if (gateShut(nx,ny)) { say([{who:"", text:"The east gate is barred from this side. Past it lie the Marches. Holt will open it once your park's banner flies again and the field is held."}]); return; }
+  if (!walkable(nx,ny)) return;
+  anim = { moving:true, from:{x:state.x,y:state.y}, t0:performance.now() };
+  state.x = nx; state.y = ny;
+}
+function lineClear(a, b){
+  let x0=a.x, y0=a.y; const x1=b.x, y1=b.y; const dx=Math.abs(x1-x0), dy=-Math.abs(y1-y0), sx=x0<x1?1:-1, sy=y0<y1?1:-1; let err=dx+dy;
+  while (!(x0===x1 && y0===y1)) { const e2=2*err; if (e2>=dy){err+=dy;x0+=sx;} if (e2<=dx){err+=dx;y0+=sy;} if (x0===x1&&y0===y1) break; if (LOS_BLOCK.has(tileAt(x0,y0))) return false; }
+  return true;
+}
+function checkShrine(){
+  SHRINES.forEach((sh, i) => {
+    if (cheb(sh, state) > 1) return;
+    if (state.shrine.x === sh.rx && state.shrine.y === sh.ry) return;
+    state.shrine = {x:sh.rx, y:sh.ry};
+    const first = !state.shrinesSeen.includes(i); if (first) state.shrinesSeen.push(i);
+    save();
+    if (i > 0) say([{who:"", text:`You touch ${sh.name}. When you fall, you'll return here.`}]);
+  });
+}
+function checkAggro(){
+  if (mode !== "world") return;
+  if (state.bossHere && state.quest === 3 && state.boss && cheb(state.boss, state) <= 2) {
+    const kname = state.bossName.split(",")[0];
+    say([{who:kname, text: state.bossLives < 4 ? "Back from Nirvana already? Good. Again." : "Ready? Then come on."}], () => startBattle({kind:"boss"}));
+    return;
+  }
+  for (const e of state.enemies) {
+    if (!e.alive) continue;
+    if (cheb(e, state) <= 3 && lineClear(e, state)) {
+      bangs.push({x:e.x,y:e.y,t:performance.now()});
+      if (TROOPS[e.type].elite) { const t = TROOPS[e.type]; say([{who:t.label.split(",")[0], text: ELITE_LINES[e.type]}], () => startBattle({kind:"troop", ref:e})); return; }
+      startBattle({kind:"troop", ref:e}); return;
+    }
+  }
+}
+const ELITE_LINES = {
+  chief: "Another hero come to clear the Greywood? The last one left without his boots.",
+  captain: "Thornwall doesn't yield the road to strangers. Shields up, if you've got one.",
+  warlord: "So the little parks send their best. Come. Bleed on my floor.",
+  btOnyx: "The grove sings loudest here at its Heart. Blackthorne holds it now. Take it from me if you can.",
+  btPiper: "Blackthorne's Flame burns this far into Westmarch. Show me what yours is worth.",
+  btJynx: "I've worn this Flame belt a long time. Come and see what that means.",
+  btCerb: "That's Blackthorne's standard behind me, and it stays planted. Go through me.",
+};
+function wander(now){
+  if (now - lastWander < 900) return; lastWander = now;
+  const t = Date.now();
+  for (const e of state.enemies) {
+    if (!e.alive) {
+      if (e.respawn && e.deadAt && t - e.deadAt > RESPAWN_MS && cheb({x:e.hx,y:e.hy}, state) > 8 && walkable(e.hx,e.hy)) { e.alive = true; e.x = e.hx; e.y = e.hy; e.deadAt = null; }
+      continue;
+    }
+    if (Math.random() < .45) continue;
+    const ds = Object.values(DIRS); const [dx,dy] = ds[Math.floor(Math.random()*4)];
+    const nx=e.x+dx, ny=e.y+dy;
+    if (Math.abs(nx-e.hx)>2 || Math.abs(ny-e.hy)>2) continue;
+    if (!walkable(nx,ny) || (nx===state.x && ny===state.y) || tileAt(nx,ny)==="=" || tileAt(nx,ny)==="G") continue;
+    e.x=nx; e.y=ny;
+  }
+  checkAggro();
+}
+function respawnAll(){ for (const e of state.enemies) if (e.respawn && !e.alive) { e.alive = true; e.x = e.hx; e.y = e.hy; e.deadAt = null; } }
+function facing(){ const [dx,dy] = DIRS[state.face] || [0,1]; return {x:state.x+dx, y:state.y+dy}; }
+function interact(){
+  if (mode === "dialog") return advance();
+  if (mode === "sheet") return closeSheet();
+  if (mode !== "world" || anim.moving) return;
+  const f = facing();
+  if (state.bossHere && state.boss && state.boss.x===f.x && state.boss.y===f.y) return checkAggro();
+  const npc = NPCS.find(n => n.x===f.x && n.y===f.y);
+  if (npc) return talk(npc);
+  const t = tileAt(f.x, f.y);
+  if (t === "C") {
+    if (state.chestOpen) return say([{who:"", text:"The chest is empty."}]);
+    state.chestOpen = true; state.you.potion++; save(); hud();
+    return say([{who:"", text:"You open the old chest and find a Healing Potion wrapped in a scrap of tabard. (+1 potion)"}]);
+  }
+  if (t === "B" && !state.hasBanner && !state.flagHome) {
+    state.hasBanner = true; state.quest = Math.max(state.quest, 2); save(); hud();
+    return say([{who:"", text:"You pull your park's banner from the Hounds' stand. Blue and gold, a little muddy, entirely yours."},{who:"", text:"Carry it home to the flag stand by the path."}]);
+  }
+  if (t === "F") {
+    if (state.hasBanner) {
+      state.hasBanner = false; state.flagHome = true; state.quest = 3; save(); hud();
+      return say([{who:"", text:"You plant the banner on its stand. Somewhere behind you, the park cheers."}], arriveBoss);
+    }
+    return say([{who:"", text: state.flagHome ? "Your banner flies over the field." : "The park's flag stand stands empty. The banner was stolen at dawn."}]);
+  }
+  if (t === "N") return say([{who:"", text:"A Nirvana shrine. Touch it, and when you fall in battle you'll walk back here."}]);
+  if (t === "G") return say([{who:"", text: state.quest >= 4 ? "The east gate stands open." : "The east gate is barred. The Marches lie beyond."}]);
+  if (t === "P") return bountyBoard();
+  if (t === "f") return say([{who:"", text:"A tourney pennant snaps in the wind."}]);
+}
+function bountyBoard(){
+  const B_ = [["chief","Grell, the Brigand Chief","Greywood, north-east"],["captain","Captain Marla of Thornwall","Thornwall camp, east"],["warlord","Vane, the Reaver Warlord","Darkwood keep, south-east"]];
+  const lines = B_.map(([k, n, where]) => ({who:"Guild bounty board", text:`${n} (${where}): ${state.bounties[k] ? "CLAIMED by " + state.you.name + "." : `reward ${TROOPS[k].coin} coin and great renown.`}`}));
+  if (state.quest >= 4) lines.push({who:"Guild bounty board", text:`URGENT, by order of the Border Warden: "Blackthorne has come through the Crystal Grove, south of the Field road. Their Knights lead the invasion: ${BT_KNIGHT_TYPES.map(k => TROOPS[k].label.split(" of St.")[0] + (state.bounties[k] ? " (bested)" : "")).join(", ")}. Report to Border Warden Eda at the southern pass."`});
+  lines.push({who:"Guild bounty board", text:`A newer notice: "Knights of the realm accept challenges at the Field of Honor, south-west along the road. Ask for Herald Brannoc." Knights bested so far: ${state.bested.length}.`});
+  say(lines);
+}
+function talk(n){
+  const q = state.quest, kname = state.bossName.split(",")[0], L6 = state.level >= 6;
+  const L = {
+    holt: q===0 ? [
+      {who:n.name, text:`There you are, ${state.you.name}. Bad news: the Ashen Hounds raided us at dawn and walked off with the park banner.`},
+      {who:n.name, text:"Their camp is across the river. Take the bridge or wade the ford to the south. Bring the banner back and plant it on the flag stand by the path."},
+      {who:n.name, text:"The Hounds will rush you when they spot you, about three paces off. The trees, hills and fences around you matter when a fight starts, so pick your ground."},
+      {who:n.name, text:"Ilsa will patch you up, and Rook has something for you. Go."},
+    ] : q<3 ? [{who:n.name, text: state.hasBanner ? "That's our banner! Get it on the stand!" : "The banner won't rescue itself. Across the river, east."}]
+      : q===3 ? [{who:n.name, text:`${kname} is a Knight of the realm. Don't expect mercy, expect a lesson.`}]
+      : L6 ? [{who:n.name, text:`Paragon ${state.you.name}. I trained you when you couldn't hold a sword straight. Don't let it go to your head. Much.`}]
+      : [{who:n.name, text:"I've unbarred the east gate, past the Hounds' old camp. The Marches are rough country: brigands, a rival park, and worse in the old keep."},{who:n.name, text:"Find Guildmaster Corwin at the waystation on the east road. He keeps the record of every fighter's levels."}],
+    ilsa: [{who:n.name, text:"Hold still. There, limbs back where they belong, and your armor's mended."}],
+    rook: state.gotMasterwork ? [{who:n.name, text:"Keep that edge clean."}] : [{who:n.name, text:"Here, take this whetstone and a proper grip wrap. Your weapon's Masterwork now: re-roll any 1s to hit."}],
+    wren: q===0 ? [{who:n.name, text:"Nobody crosses until Holt's had his say."}] : q>=4 ? [{who:n.name, text:"The east gate's open past the Hounds' old camp. Bring back stories."}] : [{who:n.name, text:"One Hound guards the bridge, and their archer likes the trees near the camp. Close the distance fast, or use cover."}],
+    pip: q>=4 ? [{who:n.name, text:"I scouted the Marches! Brigands in the Greywood to the north-east, Thornwall's camp east down the road, and the Darkwood keep south-east. Don't go in the keep until you're a lot tougher."}] : [{who:n.name, text:"Psst. The ford down south is slow going, but their Warrior over there is alone. The barbarian by the banner hits like a falling oak."}],
+    corwin: state.metCorwin ? [
+      {who:n.name, text: L6 ? `The Guild's book names you Paragon ${state.you.cls}. The bounties still stand, and the Knights at the Field of Honor would love a word.` : `${title()}, ${state.xp} experience. ${LEVEL_XP[state.level+1] - state.xp} more to reach level ${state.level+1}.`},
+      ...(L6 ? [] : [{who:n.name, text:`At level ${state.level+1} you'll gain: ${perksAt(state.you.cls, state.level+1).join("; ")}.`}]),
+    ] : [
+      {who:n.name, text:`Welcome to the waystation, ${state.you.name}. I'm Corwin. I keep the Guild's book: every fighter's levels in every class.`},
+      {who:n.name, text:"Every fight you win out here earns experience. Earn enough and you climb a level, up to six. Each level makes you tougher, and your class teaches you something new at levels three, five and six."},
+      {who:n.name, text:"Reach sixth level and the Guild will name you Paragon. Press C, or tap Character, any time to see where you stand."},
+      {who:n.name, text:"The board out front lists bounties. Brother Aldous will patch you up, and Tamsin sells potions and a bed for the night. Touch the shrine south of here so you don't have to walk all the way home from Nirvana."},
+    ],
+    eda: state.crystalDone ? [{who:n.name, text:`The grove's quiet again, Warden ${state.you.name}. Blackthorne will be back some season. They always are. We'll be ready.`}]
+      : btBested() ? [{who:n.name, text:`${btBested()} of their four Knights bested. Keep pushing: the Heart of the Grove lies west along the path, Blackthorne's camp east.`}]
+      : [
+      {who:n.name, text:`You're the one who held the field for your park? Good. I need you. The Crystal Grove woke three days ago, and Blackthorne came through it.`},
+      {who:n.name, text:"They're from the Kingdom of the Crystal Groves, and four of their Knights lead them: Onyx holds the Heart of the Grove to the west, Piper the middle of the path, Ser Jynx the approach to their camp, and Baron Cerberus guards their standard inside it."},
+      {who:n.name, text:"Mind the ground. The tall crystals block sight, and any caster standing beside one gets a boost: theirs and yours. The crystal thickets slow you down and give cover, and if you back out of one you can cut yourself on the shards. Blackthorne's people walk through them like they're grass."},
+      {who:n.name, text:"Best all four Knights and the invasion breaks. Touch my shrine before you go."},
+    ],
+    aldous: [{who:n.name, text:"Peace, friend. Your wounds are closed, limbs whole, and armor mended. Go gently. Or don't; you look the type."}],
+    lark: [
+      [{who:n.name, text:"A song for coin? No? Then a tip for free: the brigand bowmen in the Greywood hate it when you come at them through the trees."}],
+      [{who:n.name, text:"They say Captain Marla of Thornwall never broke a shieldwall she didn't build herself. Wear her down; she's only got two lives in her."}],
+      [{who:n.name, text:"The Warlord Vane has a ward on him and three lives. The warlocks in the keep throw lightning. Bring potions. Lots of potions."}],
+      [{who:n.name, text:"Have you heard? Blackthorne came through the Crystal Grove! They say the crystals sing when a spellcaster stands close. I'm writing a ballad. It needs an ending, hint hint."}],
+      [{who:n.name, text:"Monsters respawn? No, no, the brigands just keep recruiting. Every minute or so, by my count."}],
+    ][Math.floor(Math.random()*5)],
+  }[n.id];
+  if (n.id === "holt" && q === 0) { say(L, () => { state.quest = 1; save(); hud(); }); return; }
+  if (n.id === "ilsa" || n.id === "aldous") { const y = state.you; y.W = y.maxW; y.arm = y.leg = false; y.damaged = false; save(); hud(); }
+  if (n.id === "rook" && !state.gotMasterwork) { state.gotMasterwork = true; state.you.masterwork = true; save(); hud(); }
+  if (n.id === "corwin") { const first = !state.metCorwin; state.metCorwin = true; save(); return say(L); }
+  if (n.id === "tamsin") return tamsin(n);
+  if (n.id === "herald") return herald(n);
+  say(L);
+}
+const POTION_COST = 6;
+function tamsin(n){
+  const y = state.you;
+  menu(n.name, `"Potions, bandages, a bed by the fire. What'll it be?" You have ${state.coins} coin and ${y.potion} potion${y.potion===1?"":"s"}.`, [
+    ["potion", `Buy a Healing Potion`, `${POTION_COST} coin`, state.coins >= POTION_COST && y.potion < 6],
+    ["rest", "Rest until dawn", "Free. Restores your lives; the Marches restock their fighters", true],
+    ["bye", "Nothing today", "", true],
+  ], c => {
+    if (c === "potion") { state.coins -= POTION_COST; y.potion++; save(); hud(); return tamsin(n); }
+    if (c === "rest") { y.lives = y.maxLives; y.W = y.maxW; y.arm = y.leg = false; y.damaged = false; respawnAll(); save(); hud(); return say([{who:"", text:"You sleep by Tamsin's fire. At dawn you feel whole again, and somewhere out in the Marches, new recruits are picking up swords."}]); }
+  });
+}
+function herald(n){
+  const left = KNIGHTS.filter(k => !state.bested.includes(k[1]) && k[1] !== state.bossName);
+  if (!left.length) return say([{who:n.name, text:"You've bested every Knight who'd take the field. The bards are running out of rhymes."}]);
+  menu(n.name, `"Hear ye! The Field of Honor is open. Knights of the realm accept challenges from worthy fighters. Three lives each, and no shame in losing: a tourney loss costs you no life." Knights bested: ${state.bested.length}.${state.level < 3 ? " (The Knights are tough. Most fighters wait until level 3 or more.)" : ""}`, [
+    ["fight", "Challenge a Knight", "A Knight of the realm, chosen by the Herald", true],
+    ["no", "Not today", "", true],
+  ], c => {
+    if (c !== "fight") return;
+    const k = left[Math.floor(Math.random()*left.length)], o = ORDERS[k[0]];
+    state.duelKnight = { order:k[0], name:k[1], x:16, y:32 };
+    state.x = 24; state.y = 32; state.face = "left"; state.lr = "left";
+    say([{who:n.name, text:`Enter the field: ${k[1]}, ${o.name}!`},{who:k[1].split(",")[0], text: SIGS[k[1]] ? SIGS[k[1]].quote : DUEL_LINES[Math.floor(Math.random()*DUEL_LINES.length)]}], () => startBattle({kind:"duel"}));
+  });
+}
+const DUEL_LINES = ["Let's see what the Marches have taught you.","I've heard your name. Let's see if it's earned.","Salute, then fight. That's the whole of it.","Don't hold back on my account."];
+function arriveBoss(){
+  state.bossHere = true;
+  state.boss = { x:12, y:9 };
+  const kname = state.bossName.split(",")[0];
+  const o = ORDERS[state.bossOrder];
+  say([
+    {who:"", text:`A figure in a ${o.name.replace("Knight of the ","").toLowerCase()} sash walks onto the field: ${state.bossName}, ${o.name}.`},
+    {who:kname, text:"Word travels fast. You took your banner back from the Hounds. I came to see whether you can hold it."},
+    {who:kname, text:"Draw your weapon. Let's find out."},
+  ], () => startBattle({kind:"boss"}));
+}
+
+/* ============================== dialogue ============================== */
+let dlg = null;
+function say(lines, then){
+  dlg = { lines, i:0, then };
+  mode = "dialog"; renderDialog();
+}
+function renderDialog(){
+  const l = dlg.lines[dlg.i];
+  $("#panel").innerHTML = `<div class="card">${l.who ? `<p class="who">${esc(l.who)}</p>` : ""}<p class="say">${esc(l.text)}</p><div class="btns"><button type="button" id="next">${dlg.i < dlg.lines.length-1 ? "Continue" : "Close"}</button></div></div>`;
+  $("#next").addEventListener("click", advance); $("#next").focus({preventScroll:true});
+}
+function advance(){
+  if (!dlg) return;
+  if (dlg.menu) return;
+  dlg.i++;
+  if (dlg.i < dlg.lines.length) return renderDialog();
+  const then = dlg.then; dlg = null; mode = "world"; idlePanel();
+  if (then) then();
+}
+// A choice dialog: opts are [value, label, sub, enabled]
+function menu(who, text, opts, cb){
+  dlg = { menu:true }; mode = "dialog";
+  $("#panel").innerHTML = `<div class="card"><p class="who">${esc(who)}</p><p class="say">${esc(text)}</p><div class="btns">${opts.map(([v_, l, sub, ok], i) => `<button type="button" data-m="${esc(v_)}" class="${i ? "ghost" : ""}"${ok ? "" : " disabled"}>${esc(l)}${sub ? `<small>${esc(sub)}</small>` : ""}</button>`).join("")}</div></div>`;
+  $("#panel").querySelectorAll("button[data-m]").forEach(b => b.addEventListener("click", () => { dlg = null; mode = "world"; idlePanel(); cb(b.dataset.m); }));
+  $("#panel").querySelector("button:not([disabled])")?.focus({preventScroll:true});
+}
+function idlePanel(){
+  $("#panel").innerHTML = `<div class="card"><p class="hint" style="margin:0">Walk with the arrow keys or WASD. Press Space or Enter to talk, open, or pick things up. Press C for your character sheet and map. On a phone, use the pad below.</p></div>`;
+}
+
+/* ============================== character sheet ============================== */
+const MINI = {".":"#5d8a3e",":":"#b8a06a","T":"#2f5a2a","%":"#3a6a30","^":"#7a9a4a","~":"#2f5f8f","=":"#8a6a42","-":"#4f86a8","H":"#9c2a2c","#":"#8a6a42","t":"#c9b88a","W":"#5a5850","s":"#a39d8e","r":"#7e7a70","N":"#e8e8ff","F":"#2b4970","B":"#2b4970","C":"#a86a32","G":"#6a4a2a","P":"#e8e2c8","f":"#9c2a2c",",":"#9ab86a","g":"#3f6e5a","x":"#7cc4c2","X":"#bdf0ee","h":"#c86fd0","k":"#1f3d3e"};
+function openSheet(){
+  if (mode !== "world") return;
+  mode = "sheet";
+  const y = state.you, L = state.level, w = effWeapon(y, y.weapon), sv = saveTarget(y, {AP:0});
+  const rows = [];
+  for (let l = 2; l <= 6; l++) rows.push(`<li class="${l <= L ? "got" : ""}"><b>Level ${l}${l===6?" · Paragon":""}</b> ${perksAt(y.cls, l).map(esc).join("; ")}${l > L ? ` <span class="hint">(${LEVEL_XP[l]} XP)</span>` : ""}</li>`);
+  const book = y.bookBase ? Object.entries(y.bookBase).map(([k,n]) => `${k} ×${n}`).join(", ") : "";
+  $("#panel").innerHTML = `<div class="card sheet">
+    <p class="who">${esc(title())}</p><h2>${esc(y.name)}</h2>
+    <p class="hint" style="margin:0 0 .5rem">${state.xp} XP${L < 6 ? `, ${LEVEL_XP[L+1] - state.xp} to level ${L+1}` : ""} · ${state.coins} coin · ${state.wins} battles won · Knights bested: ${state.bested.length}${state.crystalDone ? " · Warden of the Crystal Grove" : state.quest >= 4 ? ` · Blackthorne Knights bested: ${btBested()}/4` : ""}</p>
+    <div class="statrow"><span>M ${y.M}"</span><span>T ${y.T}</span><span>W ${y.maxW}</span><span>Ld ${y.Ld}</span><span>Sv ${sv ? sv + "+" : "none"}</span>${y.ward ? `<span>Ward ${y.ward}+</span>` : ""}<span>Lives ${y.maxLives}</span><span>Heroic ${y.heroicBase}</span></div>
+    <p style="margin:.4rem 0">${esc(w.name)}: A${w.A} · ${w.hit}+ to hit · S${w.S}${w.AP ? " · AP" + w.AP : ""}${w.D > 1 ? " · D" + w.D : ""}${y.bow ? ` · Bow ${y.bowRange || 24}"` : ""}${y.lethal ? ` · Lethal on ${y.lethal}+` : ""}</p>
+    ${book ? `<p class="hint" style="margin:0 0 .4rem">Spells per battle: ${esc(book)}</p>` : ""}
+    <p class="hint" style="margin:0 0 .4rem">Class base: ${esc(CLASSES[y.cls].text)}</p>
+    <ul class="perks">${rows.join("")}</ul>
+    <canvas id="mini" width="${MW}" height="${MH}" aria-label="Map of Westmarch and the Marches"></canvas>
+    <p class="hint" style="margin:.2rem 0 .6rem">You are the red dot. Gold: waystation. White: shrines. Red: foes still standing.</p>
+    <div class="btns"><button type="button" id="closesheet">Back to the field</button></div></div>`;
+  const mc = $("#mini").getContext("2d");
+  for (let yy=0; yy<MH; yy++) for (let xx=0; xx<MW; xx++) { mc.fillStyle = MINI[map[yy][xx]] || "#5d8a3e"; mc.fillRect(xx,yy,1,1); }
+  mc.fillStyle = "#c82828"; for (const e of state.enemies) if (e.alive && (e.id[0] === "e" || state.quest >= 4)) mc.fillRect(e.x,e.y,1,1);
+  mc.fillStyle = "#e8c868"; mc.fillRect(53,8,5,2);
+  mc.fillStyle = "#ffffff"; SHRINES.forEach(s_ => mc.fillRect(s_.x, s_.y, 1, 1));
+  mc.fillStyle = "#ff2020"; mc.fillRect(state.x-1, state.y-1, 3, 3); mc.fillStyle = "#fff"; mc.fillRect(state.x, state.y, 1, 1);
+  $("#closesheet").addEventListener("click", closeSheet); $("#closesheet").focus({preventScroll:true});
+}
+function closeSheet(){ if (mode !== "sheet") return; mode = "world"; idlePanel(); }
+
+/* ============================== experience ============================== */
+// Returns the list of level-up messages earned.
+function gainXP(n){
+  state.xp += n; const ups = [];
+  while (state.level < 6 && state.xp >= LEVEL_XP[state.level + 1]) {
+    state.level++;
+    const old = state.you, nu = makeYou(state.cfg, state.level);
+    nu.W = Math.max(1, old.W + (nu.maxW - old.maxW)); nu.lives = old.lives + (nu.maxLives - old.maxLives);
+    for (const k of ["arm","leg","damaged","potion","masterwork"]) nu[k] = old[k];
+    state.you = nu;
+    ups.push(`Level ${state.level}${state.level===6 ? ": Paragon!" : "!"} ${perksAt(nu.cls, state.level).join("; ")}.`);
+  }
+  return ups;
+}
+
+/* ============================== render loop ============================== */
+function camera(cxp, cyp){ return { x: Math.max(0, Math.min(MW - VW, cxp - VW/2 + .5)), y: Math.max(0, Math.min(MH - VH, cyp - VH/2 + .5)) }; }
+function drawWorld(now){
+  let pxp = state.x, pyp = state.y, step = 0;
+  if (anim.moving) {
+    const k = Math.min(1, (now - anim.t0) / 130);
+    pxp = anim.from.x + (state.x - anim.from.x) * k; pyp = anim.from.y + (state.y - anim.from.y) * k; step = 1;
+    if (k >= 1) { anim.moving = false; save(); checkShrine(); checkAggro(); }
+  }
+  const cam = camera(pxp, pyp);
+  const ox = Math.floor(cam.x), oy = Math.floor(cam.y), fx = (cam.x - ox) * TS, fy = (cam.y - oy) * TS;
+  for (let y=0; y<=VH; y++) for (let x=0; x<=VW; x++) { const gx=ox+x, gy=oy+y; if (gx>=MW||gy>=MH) continue; drawTile(map[gy][gx], Math.round(x*TS - fx), Math.round(y*TS - fy), gx, gy); }
+  const ents = [];
+  NPCS.forEach(n => ents.push({x:n.x, y:n.y, look:n.look, face:n.face}));
+  state.enemies.forEach(e => { if (e.alive && Math.abs(e.x - cam.x - 8) < 11 && Math.abs(e.y - cam.y - 5) < 8) ents.push({x:e.x, y:e.y, look:makeTroop(e.type).look, face: e.x > state.x ? "left" : "right"}); });
+  if (state.duelKnight) ents.push({x:state.duelKnight.x, y:state.duelKnight.y, look:makeKnight(state.duelKnight.order, state.duelKnight.name).look, face:"right"});
+  if (state.bossHere && state.boss) ents.push({x:state.boss.x, y:state.boss.y, look:makeKnight(state.bossOrder, state.bossName).look, face:"right"});
+  ents.push({x:pxp, y:pyp, look:{...state.you.look, banner:state.hasBanner}, face:state.lr || "right", step: step ? Math.floor(now/120) : 0, me:true});
+  ents.sort((a,b) => a.y - b.y);
+  for (const e of ents) drawMan(Math.round((e.x - cam.x)*TS), Math.round((e.y - cam.y)*TS), e.look, e.face, e.step);
+  bangs = bangs.filter(b => now - b.t < 700);
+  for (const b of bangs) { const sx=(b.x-cam.x)*TS, sy=(b.y-cam.y)*TS-10; px(sx+6,sy,4,8,"#fff"); px(sx+6,sy+10,4,3,"#fff"); px(sx+7,sy+1,2,6,"#c82828"); px(sx+7,sy+11,2,1,"#c82828"); }
+}
+function loop(now){
+  if (!cv || !state) return;
+  if (mode === "world") {
+    for (const k of ["up","down","left","right"]) if (held.has(k)) { tryStep(k); break; }
+    wander(now);
+    drawWorld(now);
+  } else if (mode === "dialog") {
+    drawWorld(now);
+  } else if (mode === "battle") {
+    drawBattle(now);
+  }
+  requestAnimationFrame(loop);
+}
+
+/* ============================== battle grid ============================== */
+const GW = 13, GH = 9, GOX = (256 - GW*TS)/2, GOY = (176 - GH*TS)/2;
+let B = null;
+const dice = (rolls, need, sixRed) => rolls.map(r => `<span class="d ${sixRed && r===6 ? "six" : (need && r>=need ? "ok" : "")}">${r}</span>`).join("");
+const short = (m) => m.name.split(",")[0];
+const nm = (m) => m.side === "you" ? "You" : esc(short(m));
+const v = (m, a, b) => m.side === "you" ? a : b;
+const poss = (m) => m.side === "you" ? "Your" : esc(short(m)) + "'s";
+function woundNeed(S, T){ if (S >= 2*T) return 2; if (S > T) return 3; if (S === T) return 4; if (S*2 <= T) return 6; return 5; }
+
+const bt = (x,y) => (x<0||y<0||x>=GW||y>=GH) ? "T" : tileAt(B.ox+x, B.oy+y);
+const open = (x,y) => !SOLID.has(bt(x,y));
+const moveTiles = (m) => m.leg ? 1 : Math.floor(m.M/2);
+const other = (m) => m === B.you ? B.foe : B.you;
+const engagedNow = () => !B.you.dead && !B.foe.dead && cheb(B.you, B.foe) === 1;
+function gridLos(a, b){
+  let x0=a.x, y0=a.y; const x1=b.x, y1=b.y; const dx=Math.abs(x1-x0), dy=-Math.abs(y1-y0), sx=x0<x1?1:-1, sy=y0<y1?1:-1; let err=dx+dy, cover=false;
+  while (true) { const e2=2*err; if (e2>=dy){err+=dy;x0+=sx;} if (e2<=dx){err+=dx;y0+=sy;} if (x0===x1&&y0===y1) break;
+    const t = bt(x0,y0); if (LOS_BLOCK.has(t)) return {clear:false}; if (COVER.has(t)) cover=true; }
+  if (bt(b.x,b.y)==="%" || bt(b.x,b.y)==="r" || bt(b.x,b.y)==="x") cover = true;
+  return {clear:true, cover};
+}
+// Reachable tiles for a mover (8-way, difficult ground costs 2). Tiles touching the enemy are charges.
+function reach(m, {fallBack=false} = {}){
+  const foe = other(m), max = moveTiles(m), out = new Map();
+  const q = [{x:m.x,y:m.y,c:0}]; const best = new Map([[m.x+","+m.y,0]]);
+  while (q.length) {
+    q.sort((a,b)=>a.c-b.c); const cur = q.shift();
+    for (let dx=-1; dx<=1; dx++) for (let dy=-1; dy<=1; dy++) {
+      if (!dx && !dy) continue; const nx=cur.x+dx, ny=cur.y+dy;
+      if (!open(nx,ny) || (nx===foe.x && ny===foe.y)) continue;
+      const tt = bt(nx,ny); const c = cur.c + (DIFFICULT.has(tt) && !(tt === "x" && m.fac === "bt") ? 2 : 1); if (c > max) continue;
+      const k = nx+","+ny; if (best.has(k) && best.get(k) <= c) continue; best.set(k,c);
+      const touching = !foe.dead && cheb({x:nx,y:ny}, foe) === 1;
+      if (touching) { if (!fallBack && !m.leg && !foe.cond.frozen) out.set(k, {x:nx,y:ny,c,charge:true}); continue; } // stop on contact
+      out.set(k, {x:nx,y:ny,c,charge:false});
+      if (!(cheb(cur, foe) === 1 && fallBack && false)) q.push({x:nx,y:ny,c});
+    }
+  }
+  return [...out.values()];
+}
+
+function effWeapon(m, name){
+  const base = W[name]; const w = {...base, name};
+  if (m.arm && (w.twoH || w.shield)) return { name:"Single Short (one arm)", A:1, hit:3, S:3, AP:0, D:1 };
+  if (m.arm) w.A = Math.max(1, w.A - 1);
+  if (m.knight && m.order==="sword" && name==="Dual Short") w.A += 1;
+  if (m.bonusA) w.A += m.bonusA;
+  if (name === "Bow" && m.side === "you") { if (m.bowS) w.S = m.bowS; if (m.bowA) w.A += m.bowA; }
+  if (!w.range && m.bonusS) w.S += m.bonusS;
+  if (!w.range && m.berserk && m.W <= m.maxW/2) w.A += 1;
+  if (m.cond.heat && !w.range) w.A = 1;
+  if (m.hero && !(m.sig && w.range)) { w.A += 1; w.hit = Math.max(2, w.hit - 1); }
+  return w;
+}
+function saveTarget(def, wpn){
+  let sv = def.baseSv;
+  if (sv != null && def.damaged) sv += 1;
+  if (sv != null && sv > 6) sv = null;
+  const dw = W[def.weapon]; const hasShield = dw && dw.shield && !def.arm;
+  if (hasShield && !(wpn.breaker || wpn.wrap)) sv = (sv == null) ? 6 : sv - 1;
+  if (sv == null) return null;
+  sv = Math.max(2, sv - (wpn.AP || 0));
+  return sv > 6 ? null : sv;
+}
+
+async function attack(att, def, wpn, opts = {}){
+  if (def.cond.frozen) { log(`${nm(def)} ${v(def,"are","is")} frozen in ice and can't be struck.`); return; }
+  let mods = 0;
+  if (opts.aimed) mods -= 1;
+  if (opts.cover) mods -= 1;
+  if (opts.melee && def.terror) mods -= 1;
+  const reach = opts.melee && def.sig && def.sig.id === "reach" && B.charged !== att.side;
+  if (reach) mods -= 1;
+  if (att.side === "foe" && B.youBroken) {}
+  mods = Math.max(-2, mods);
+  if (opts.chargeHit) mods += 1;
+  const target = Math.min(6, Math.max(2, wpn.hit - mods));
+  let hits;
+  if (opts.spell) hits = 1;
+  else {
+    let rolls = []; for (let i = 0; i < wpn.A; i++) rolls.push(d6());
+    if (att.masterwork) rolls = rolls.map(r => r === 1 ? d6() : r);
+    if (att.cond.decree) rolls = rolls.map(r => (r < target && r !== 6) ? d6() : r);
+    hits = rolls.filter(r => r === 6 || (r !== 1 && r >= target)).length;
+    const misses = rolls.length - hits;
+    if (reach && !hits) log(`<b>"${esc(def.sig.quote)}"</b> ${esc(short(def))} dances just out of reach.`);
+    log(`${nm(att)} ${v(att,"strike","strikes")} with ${esc(wpn.name)}${opts.aimed ? ` (aimed at the ${opts.aimed})` : ""}${opts.cover ? " into cover" : ""}${reach ? " at the edge of his reach" : ""}: ${dice(rolls, target)} needs ${target}+, <b>${hits} hit${hits===1?"":"s"}</b>.`);
+    if (opts.melee && def.knight && def.order === "sword" && misses > 0) {
+      log(`<b>Master of the Blade:</b> ${esc(short(def))} punishes ${misses} miss${misses===1?"":"es"}.`);
+      for (let i = 0; i < misses && !att.dead; i++) await damage(att, { lethal:false, D:1, mortal:true, by:def });
+    }
+  }
+  if (!hits || att.dead) return;
+  const wNeed = woundNeed(wpn.S, def.T);
+  let wr = []; for (let i = 0; i < hits; i++) wr.push(d6());
+  if (att.knight && att.order === "sword") wr = wr.map(r => r < wNeed ? d6() : r);
+  if (att.knight && att.order === "serpent") wr = wr.map(r => r === 1 ? d6() : r);
+  const wounds = wr.filter(r => r >= wNeed);
+  log(`To wound (S${wpn.S} vs T${def.T}): ${dice(wr, wNeed, true)} needs ${wNeed}+, <b>${wounds.length} wound${wounds.length===1?"":"s"}</b>.`);
+  for (const r of wounds) {
+    if (def.dead) break;
+    const lethal = r === 6 || wpn.D >= 2 || opts.smite || (opts.melee && att.lethal && r >= att.lethal) || (wpn.name === "Bow" && att.deadeye && r >= 5);
+    const sv = opts.phase ? null : saveTarget(def, wpn);
+    if (sv != null) {
+      let s = d6(), ok = s !== 1 && s >= sv;
+      if (ok && att.knight && att.order === "serpent" && !B.guileUsed) { B.guileUsed = true; log(`<b>Serpent's Guile:</b> ${esc(short(att))} forces a re-roll of your ${dice([s], sv)} save.`); s = d6(); ok = s !== 1 && s >= sv; }
+      log(`${nm(def)} ${v(def,"save","saves")} on ${sv}+: ${dice([s], sv)} ${ok ? "<b>saved</b>." : "failed."}`);
+      if (!ok && def.battlemaster && !B.bmUsed) { B.bmUsed = true; s = d6(); ok = s !== 1 && s >= sv; log(`<b>Battlemaster:</b> you re-roll the save: ${dice([s], sv)} ${ok ? "<b>saved</b>." : "failed."}`); }
+      if (ok) continue;
+      if (def.baseSv != null && !def.damaged) { def.damaged = true; log(`${poss(def)} armor is <b>Damaged</b>.`); }
+    }
+    if (def.ward) { const w = d6(); if (w >= def.ward) { log(`Ward ${def.ward}+: ${dice([w], def.ward)} turns the blow aside.`); continue; } }
+    await damage(def, { lethal, D:wpn.D, aimed:opts.aimed, by:att, melee:opts.melee });
+  }
+}
+async function damage(m, { lethal, D = 1, aimed, mortal, by, melee }){
+  if (m.dead) return;
+  if (m.cond.stoneskin) { m.cond.stoneskin = false; log(`<b>Stoneskin</b> absorbs the wound.`); return; }
+  let loss = lethal ? (m.hero ? D + 1 : m.W) : 1;
+  if (m.knight && m.order === "flame") {
+    let saved = 0, rolls = []; for (let i = 0; i < loss; i++) { const r = d6(); rolls.push(r); if (r === 6) saved++; }
+    if (saved) { log(`<b>Eternal Flame:</b> ${dice(rolls, 6)} ignores ${saved} wound${saved===1?"":"s"}.`); loss -= saved; }
+    if (!loss) return;
+  }
+  if (lethal) log(`<b>LETHAL!</b> The blow strikes the body: ${nm(m)} ${v(m,"lose","loses")} ${loss} W.`);
+  else {
+    const limb = aimed || (d6() <= 3 ? "arm" : "leg"); const already = m[limb]; m[limb] = true;
+    log(`${mortal ? "Mortal wound: " : ""}a <b>limb hit</b> to the ${limb}${already ? " (already lost)" : ""}. ${nm(m)} ${v(m,"lose","loses")} 1 W.`);
+  }
+  m.W -= loss; renderBattle(); await sleep(220);
+  if (m.W <= 0) await slain(m, by, melee);
+}
+async function slain(m, by, melee){
+  if (m.side === "you" && m.resurrect && !B.resUsed) {
+    B.resUsed = true; m.W = m.maxW; m.arm = m.leg = false; renderBattle();
+    log(`<b>Resurrect!</b> Light pours into you and you rise again, whole.`, "big"); return;
+  }
+  if (m.side === "you" && B.spec.kind === "duel") {
+    B.duelLives = (B.duelLives ?? 3) - 1;
+    if (B.duelLives > 0) {
+      m.W = m.maxW; m.arm = m.leg = false; m.cond = {};
+      let best = null; for (let yy=0;yy<GH;yy++) for (let xx=0;xx<GW;xx++) if (open(xx,yy) && !(xx===B.foe.x&&yy===B.foe.y)) { const d = cheb({x:xx,y:yy}, B.foe); if (!best || d > best.d) best = {x:xx,y:yy,d}; }
+      m.x = best.x; m.y = best.y; renderBattle();
+      log(`You're struck down and walk to the tourney's Nirvana post. ${B.duelLives} tourney ${B.duelLives===1?"life":"lives"} left.`, "big");
+      return;
+    }
+    m.dead = true; m.lives -= 1; B.result = "fell"; log("Your last tourney life is spent.", "big"); return;
+  }
+  m.dead = true; m.lives -= 1;
+  if (by && by.side === "you" && m.side === "foe") {
+    if (by.restore && by.damaged) { by.damaged = false; log(`<b>Restore Armor:</b> your armor is repaired.`); }
+    if (by.steal && melee && (by.W < by.maxW || by.arm || by.leg)) {
+      if (by.soulHarvest) { const n = 1 + Math.floor(Math.random()*3); restore(by, n); log(`<b>Soul Harvest:</b> you regain ${n} W.`); }
+      else if (by.W < by.maxW) { by.W += 1; log(`<b>Steal Life:</b> you regain 1 W.`); }
+    }
+  }
+  if (by && by.side === "foe" && by.steal && melee && by.W < by.maxW) { by.W += 1; log(`<b>Steal Life:</b> ${esc(short(by))} regains 1 W.`); }
+  if (m.side === "you") { log(`You are slain and walk to Nirvana.`, "big"); B.result = "fell"; return; }
+  if (m.lives <= 0) { log(`${esc(short(m))} is defeated!`, "big"); B.result = "won"; return; }
+  log(`${esc(short(m))} is slain and walks to Nirvana. ${m.lives} ${m.lives===1?"life":"lives"} left.`, "big");
+  B.returning = true;
+}
+function knightReturns(){
+  const f = B.foe; if (!B.returning) return;
+  B.returning = false; f.dead = false; f.W = f.maxW; f.arm = f.leg = false; f.cond = {};
+  let best = null; for (let y=0;y<GH;y++) for (let x=0;x<GW;x++) if (open(x,y) && !(x===B.you.x&&y===B.you.y)) { const d = cheb({x,y}, B.you); if (!best || d > best.d) best = {x,y,d}; }
+  f.x = best.x; f.y = best.y;
+  log(`${esc(short(f))} returns from Nirvana at the edge of the field.`);
+}
+
+/* ============================== battle flow ============================== */
+async function startBattle(spec){
+  mode = "battle";
+  const y = state.you;
+  let foe, fpos;
+  if (spec.kind === "troop") { foe = makeTroop(spec.ref.type); if (spec.ref.lives) foe.lives = spec.ref.lives; fpos = {x:spec.ref.x, y:spec.ref.y}; }
+  else if (spec.kind === "duel") { const d = state.duelKnight; foe = makeKnight(d.order, d.name, 3); fpos = {x:d.x, y:d.y}; }
+  else { foe = makeKnight(state.bossOrder, state.bossName, state.bossLives); fpos = {x:state.boss.x, y:state.boss.y}; }
+  const mx = Math.round((state.x + fpos.x)/2), my = Math.round((state.y + fpos.y)/2);
+  B = { spec, ox: Math.max(0, Math.min(MW-GW, mx - 6)), oy: Math.max(0, Math.min(MH-GH, my - 4)), round:0, you:y, foe, hl:[], log:[] };
+  y.x = state.x - B.ox; y.y = state.y - B.oy; y.dead = false; y.cond = {}; y.book = y.bookBase ? {...y.bookBase} : null; y.heroic = y.heroicBase;
+  if (y.rage) y.cond.stoneskin = true;
+  foe.x = fpos.x - B.ox; foe.y = fpos.y - B.oy;
+  $("#panel").innerHTML = `<div class="card"><p class="hint" id="rnd" style="margin:0 0 .4rem"></p><div class="fighters" id="fighters"></div><div id="act"></div></div><div class="card log" id="log" aria-live="polite"></div>`;
+  log(spec.kind === "boss" || spec.kind === "duel" ? `${esc(foe.name)} draws steel. The duel begins.` : foe.elite ? `${esc(foe.name)} steps up to fight you!` : `A ${esc(foe.name)} spots you and charges in!`, "big");
+  if (y.rage) log("<b>Unstoppable:</b> you start the fight with Stoneskin.");
+  if (foe.sig) log(`<b>Signature, ${esc(foe.sig.name)}:</b> ${esc(foe.sig.text)}`);
+  renderBattle();
+  while (!B.result) await battleRound();
+  await endBattle();
+}
+async function battleRound(){
+  const y = B.you, f = B.foe;
+  B.round++; B.guileUsed = false; B.bmUsed = false; B.pinUsed = false; B.pinSpent = false; B.arrowUsed = false; B.healUsed = false; B.charged = null; B.uphill = null; y.cond.fellBack = false; f.cond.fellBack = false;
+  log(`Round ${B.round}`, "phase");
+  knightReturns();
+  if (y.regen && !y.dead && (y.W < y.maxW || y.arm || y.leg)) { restore(y, 1); log("<b>Regrowth:</b> you knit back 1 W."); }
+  const a = d6(), b = d6();
+  const pri = a > b ? "you" : b > a ? "foe" : (B.lastPri === "you" ? "foe" : "you"); B.lastPri = pri;
+  log(`Priority: you ${dice([a])} vs ${esc(short(f))} ${dice([b])}. <b>${pri==="you"?"You":esc(short(f))}</b> ${pri==="you"?"go":"goes"} first.`);
+  renderBattle();
+  let first = pri;
+  if (pri === "foe" && y.heroic && !y.cond.frozen) {
+    const h = await choose(`${esc(short(f))} moves first. Spend a Heroic Action to move first?`, [["yes","Heroic Action",`Act first this phase (${y.heroic} left)`],["no","Let them move",""]]);
+    if (h === "yes") { y.heroic--; first = "you"; log("<b>Heroic Action!</b> You seize the moment."); }
+  }
+  await order(first, moveYou, moveFoe); renderBattle(); if (B.result) return;
+  await shootYou(); renderBattle(); if (B.result) return;
+  await shootFoe(); renderBattle(); if (B.result) return;
+  if (engagedNow()) {
+    let fFirst = B.charged && B.uphill !== B.charged ? B.charged : pri;
+    if (fFirst === "you" && f.heroic && f.knight && !B.charged && Math.random() < .6) { f.heroic--; fFirst = "foe"; log(`<b>Heroic Action!</b> ${esc(short(f))} strikes first.`); }
+    else if (fFirst === "foe" && y.heroic) {
+      const h = await choose(`${esc(short(f))} strikes first. Spend a Heroic Action to strike first?`, [["yes","Heroic Action",`Strike first (${y.heroic} left)`],["no","Take the blow",""]]);
+      if (h === "yes") { y.heroic--; fFirst = "you"; log("<b>Heroic Action!</b> You strike first."); }
+    }
+    if (B.uphill) log(`Charging uphill, ${B.uphill==="you"?"you lose":"the foe loses"} the first strike.`);
+    await order(fFirst, fightYou, fightFoe); renderBattle(); if (B.result) return;
+  }
+  for (const m of [y, f]) {
+    if (m.cond.frozen) { m.cond.frozen--; if (!m.cond.frozen) log(`The ice around ${m.side==="you"?"you":esc(short(m))} cracks away.`); }
+    if (m.cond.heat) { m.cond.heat--; }
+    m.cond.decree = false; m.cond.sanctuary = false;
+  }
+  renderBattle();
+  if (!B.result) await choose("", [["next","Next round",""]]);
+}
+async function order(first, ya, fa){ if (first === "you") { await ya(); if (!B.result) await fa(); } else { await fa(); if (!B.result) await ya(); } }
+
+async function moveYou(){
+  const y = B.you, f = B.foe;
+  if (y.dead || y.cond.frozen) return;
+  if (y.cond.pinned || y.cond.entangled) { log("You can't move this activation."); y.cond.pinned = y.cond.entangled = false; return; }
+  const engaged = engagedNow();
+  const tiles = reach(y, {fallBack: engaged});
+  const charges = tiles.filter(t => t.charge), moves = tiles.filter(t => !t.charge);
+  const opts = [];
+  if (engaged && B.charged === "foe") log("You were charged this round: no falling back.");
+  if (!engaged) {
+    if (charges.length) opts.push(["charge","Charge","Into contact, strike first"]);
+    if (moves.length) opts.push(["pick","Move","Tap a blue tile on the map"]);
+    opts.push(["hold","Hold","Stay where you are"]);
+  } else {
+    opts.push(["hold","Stand and fight","Stay engaged"]);
+    if (moves.length && B.charged !== "foe") opts.push(["fall","Fall back","Tap a blue tile; no shooting or casting this round"]);
+  }
+  const c = await choose(engaged ? "Move phase: you're in combat." : "Move phase: tap a tile, or choose.", opts, tiles);
+  let dest = null;
+  if (c === "charge") dest = charges.sort((a,b) => a.c - b.c || (bt(b.x,b.y)==="^") - (bt(a.x,a.y)==="^"))[0];
+  else if (c.startsWith("tile:")) { const [tx,ty] = c.slice(5).split(",").map(Number); dest = tiles.find(t => t.x===tx && t.y===ty); }
+  else if (c === "fall" || c === "pick") { const t = await choose("Tap a blue tile.", [["cancel","Never mind",""]], c === "fall" ? moves : tiles); if (t.startsWith("tile:")) { const [tx,ty] = t.slice(5).split(",").map(Number); dest = tiles.find(q => q.x===tx && q.y===ty); } }
+  if (!dest) { log("You hold your ground."); return; }
+  if (engaged) {
+    if (f.knight && f.order === "battle") { const r=[d6(),d6()], ok = r[0]+r[1] <= y.Ld; log(`<b>Anvil of the Line:</b> ${dice(r)} = ${r[0]+r[1]} vs Ld ${y.Ld}: ${ok ? "you break away." : "you can't get free!"}`); if (!ok) return; }
+    y.cond.fellBack = true;
+    if (bt(y.x,y.y) === "x" || bt(dest.x,dest.y) === "x") { const sc = d6(); log(`<b>Shardcut:</b> you back out through the crystal thicket: ${dice([sc], 2)}${sc === 1 ? "" : " and slip through clean."}`); if (sc === 1) { y.x = dest.x; y.y = dest.y; await damage(y, { lethal:false, D:1 }); if (y.dead || B.result) return; return; } }
+  }
+  if (dest.charge && await pinningArrow(y, f, dest)) return;
+  const startHill = bt(y.x,y.y) === "^";
+  y.x = dest.x; y.y = dest.y;
+  if (dest.charge) { B.charged = "you"; if (!startHill && bt(y.x,y.y)==="^") B.uphill = "you"; log("You <b>charge</b>!"); }
+  else log(engaged ? "You fall back." : "You move.");
+}
+// Sir Rose Thorn's signature: a reaction shot that stops a charge.
+async function pinningArrow(y, f, dest){
+  if (!f.sig || f.sig.id !== "pin" || f.dead || f.cond.frozen || f.arm || B.pinUsed) return false;
+  const los = gridLos(f, y); if (!los.clear || cheb(f, y)*2 > 24) return false;
+  B.pinUsed = true; B.pinSpent = true;
+  const need = los.cover ? 6 : 5, r = d6(), hit = r !== 1 && r >= need;
+  log(`<b>"Pinning Arrow!"</b> ${esc(short(f))} reacts to your charge: ${dice([r], need)} needs ${need}+.`);
+  if (!hit) { log("The arrow whistles past. You keep coming."); renderBattle(); return false; }
+  log(`<b>"${esc(f.sig.quote)}"</b> The arrow pins you in place. Your charge stops dead.`, "big");
+  renderBattle(); return true;
+}
+async function moveFoe(){
+  const f = B.foe, y = B.you;
+  if (f.dead || f.cond.frozen) return;
+  if (f.cond.pinned || f.cond.entangled) { log(`${esc(short(f))} is held fast.`); f.cond.pinned = f.cond.entangled = false; return; }
+  const engaged = engagedNow();
+  if (f.sig && f.sig.id === "pin") {
+    // Rose Thorn holds the line: she never kites. She shoots from where she stands and fights when you reach her.
+    if (engaged) { log(`${esc(short(f))} holds the line and draws her blade.`); return; }
+    if (gridLos(f, y).clear) { log(`${esc(short(f))} holds the line, arrow on the string.`); return; }
+    const tiles = reach(f, {fallBack:true}).filter(t => !t.charge && gridLos(t, y).clear).sort((a,b) => cheb(a,y) - cheb(b,y));
+    if (tiles.length) { f.x = tiles[0].x; f.y = tiles[0].y; log(`${esc(short(f))} steps into a clear lane.`); }
+    return;
+  }
+  if (f.bow || f.caster) {
+    const tiles = reach(f, {fallBack:true}).filter(t => !t.charge);
+    const losHere = gridLos(f, y).clear, d = cheb(f, y);
+    if (!engaged && losHere && d >= 3) { log(`${esc(short(f))} holds and nocks an arrow.`); return; }
+    if (engaged && B.charged === "you") { log(`${esc(short(f))} is caught by the charge and must fight.`); return; }
+    const scored = tiles.map(t => ({t, s: (gridLos(t, y).clear ? 10 : 0) + Math.min(cheb(t, y), 6) - (gridLos(t,y).cover ? 0 : 0)})).sort((a,b) => b.s - a.s);
+    if (scored.length) { f.x = scored[0].t.x; f.y = scored[0].t.y; if (engaged) f.cond.fellBack = true; log(`${esc(short(f))} ${engaged ? "falls back" : "moves for a clear shot"}.`); }
+    return;
+  }
+  if (engaged) { log(`${esc(short(f))} stands and fights.`); return; }
+  const tiles = reach(f);
+  const charges = tiles.filter(t => t.charge).sort((a,b) => a.c - b.c);
+  if (charges.length) {
+    const startHill = bt(f.x,f.y)==="^"; const t = charges[0]; f.x = t.x; f.y = t.y; B.charged = "foe";
+    if (!startHill && bt(f.x,f.y)==="^") B.uphill = "foe";
+    log(`${esc(short(f))} <b>charges</b>!`); return;
+  }
+  const best = tiles.sort((a,b) => cheb(a,y) - cheb(b,y) || a.c - b.c)[0];
+  if (best) { f.x = best.x; f.y = best.y; log(`${esc(short(f))} advances.`); }
+}
+async function shootYou(){
+  const y = B.you, f = B.foe;
+  if (y.dead || y.cond.frozen || B.result) return;
+  const free = !engagedNow() && B.charged !== "you" && !y.cond.fellBack;
+  const los = gridLos(y, f), distIn = cheb(y, f) * 2;
+  const opts = [];
+  if (free && y.bow && !y.arm && los.clear && distIn <= (y.bowRange || 24) && !f.cond.frozen && !f.dead) {
+    opts.push(["bow","Loose an arrow",`${distIn}"${los.cover ? ", target in cover (-1)" : ""}`]);
+    if (!B.arrowUsed) { opts.push(["pin","Pinning Arrow","On a hit, the foe can't move next activation"]); opts.push(["phase","Phase Arrow","Ignores armor saves"]); }
+  }
+  if (y.book && free) for (const [sp, n] of Object.entries(y.book)) {
+    const s = SPELLS[sp]; if (!n) continue;
+    if (s.type !== "self" && (!los.clear || distIn > s.range || f.cond.frozen || f.dead)) continue;
+    opts.push(["spell:"+sp, `Cast ${sp} (${n})`, `Cast ${s.cast}+${s.type==="ball" && los.cover ? " (-1 cover)" : ""}: ${s.text}`]);
+  }
+  if (y.heal && !B.healUsed && (y.W < y.maxW || y.arm || y.leg)) opts.push(["heal","Heal","Restore 1 W and a limb"]);
+  if (y.potion && (y.W < y.maxW || y.arm || y.leg)) opts.push(["potion","Drink Healing Potion",`Restore D3 W and limbs (${y.potion} left)`]);
+  if (!opts.length) return;
+  opts.push(["pass","Do nothing",""]);
+  const c = await choose("Shoot phase: your action?", opts);
+  if (["bow","pin","phase"].includes(c)) {
+    if (c !== "bow") B.arrowUsed = true;
+    const before = f.W + f.lives*100;
+    await attack(y, f, effWeapon(y, "Bow"), { phase: c === "phase", cover: los.cover });
+    if (c === "pin" && f.W + f.lives*100 < before && !f.dead) { f.cond.pinned = true; log(`The arrow pins ${esc(short(f))} in place.`); }
+  } else if (c.startsWith("spell:")) await castSpell(c.slice(6), los);
+  else if (c === "heal") { B.healUsed = true; restore(y, 1); log("You Heal yourself: 1 W and a limb restored."); }
+  else if (c === "potion") { y.potion--; const r = 1 + Math.floor(Math.random()*3); restore(y, r); log(`You drink a Healing Potion: <b>+${r} W</b>.`); }
+}
+async function shootFoe(){
+  const f = B.foe, y = B.you;
+  if (B.pinSpent && f.bow && !f.dead && !engagedNow()) { log(`${esc(short(f))} spent this round's arrow pinning you.`); return; }
+  if (f.caster && !f.dead && !f.cond.frozen && !B.result && !engagedNow() && !f.cond.fellBack && !y.cond.frozen) {
+    const los = gridLos(f, y), distIn = cheb(f, y)*2;
+    if (los.clear && distIn <= 18) {
+      const res = resonant(f), r = d6(), need = (res ? 2 : 3) + (los.cover ? 1 : 0);
+      if (res) log(`<b>Resonance:</b> the crystal beside ${esc(short(f))} hums.`);
+      if (r === 1) { f.caster--; log(`${esc(short(f))} casts Lightning Bolt: ${dice([r])} <b>fizzle!</b>`); return; }
+      if (r < need) { log(`${esc(short(f))} casts Lightning Bolt: ${dice([r], need)} needs ${need}+. Nothing happens.`); return; }
+      f.caster--; log(`${esc(short(f))} casts <b>Lightning Bolt</b>: ${dice([r], need)} success!`);
+      await attack(f, y, {name:"Lightning Bolt", ...SPELLS["Lightning Bolt"].profile, hit:2}, {spell:true});
+      return;
+    }
+  }
+  if (!f.bow || f.dead || f.cond.frozen || B.result || engagedNow() || B.charged === "foe" || f.cond.fellBack) return;
+  const los = gridLos(f, y), distIn = cheb(f, y)*2;
+  if (!los.clear || distIn > 24 || y.cond.frozen) return;
+  await attack(f, y, effWeapon(f, "Bow"), { cover: los.cover });
+}
+function restore(m, n){ for (let i = 0; i < n; i++) { if (m.W < m.maxW) m.W++; if (m.leg) m.leg = false; else if (m.arm) m.arm = false; } renderBattle(); }
+// Crystal Spires and the Heart Crystal: a caster beside one gets +1 to cast.
+function resonant(m){ for (let dy=-1;dy<=1;dy++) for (let dx=-1;dx<=1;dx++) if (RESONANT.has(bt(m.x+dx,m.y+dy))) return true; return false; }
+async function castSpell(name, los){
+  const y = B.you, f = B.foe, s = SPELLS[name];
+  const res = resonant(y); if (res) log("<b>Resonance:</b> the crystal beside you hums. +1 to cast.");
+  let r = d6(); const need = Math.max(2, s.cast - (y.archmage ? 1 : 0) - (res ? 1 : 0)) + (s.type === "ball" && los && los.cover ? 1 : 0);
+  if (r === 1) { y.book[name]--; log(`You cast ${name}: ${dice([r])} <b>fizzle!</b>`); return; }
+  if (r < need) { log(`You cast ${name}: ${dice([r], need)} needs ${need}+. Nothing happens; you keep the spell.`); return; }
+  y.book[name]--; log(`You cast <b>${name}</b>: ${dice([r], need)} success!`);
+  if (name === "Lightning Bolt") await attack(y, f, {name:"Lightning Bolt", ...s.profile, hit:2}, {spell:true});
+  if (name === "Iceball") { f.cond.frozen = 2; log(`${esc(short(f))} is encased in ice.`); }
+  if (name === "Teleport") { let best=null; for (let yy=0;yy<GH;yy++) for (let xx=0;xx<GW;xx++) if (open(xx,yy) && !(xx===f.x&&yy===f.y)) { const d=cheb({x:xx,y:yy},f); if(!best||d>best.d) best={x:xx,y:yy,d}; } y.x=best.x; y.y=best.y; log("You vanish and reappear across the field."); }
+  if (name === "Entangle") { f.cond.entangled = true; log(`Roots bind ${esc(short(f))}'s legs.`); }
+  if (name === "Heat Weapon") { f.cond.heat = 2; log(`${poss(f)} weapon glows red-hot (A1).`); }
+  if (name === "Stoneskin") { y.cond.stoneskin = true; log("Your skin hardens like stone."); }
+  if (name === "Greater Heal") { const n = 1 + Math.floor(Math.random()*3); restore(y, n); log(`Divine light restores <b>${n} W</b>.`); }
+  if (name === "Sanctuary") { y.cond.sanctuary = true; log("A circle of sanctuary surrounds you."); }
+}
+async function fightYou(){
+  const y = B.you, f = B.foe;
+  if (y.dead || y.cond.frozen || !engagedNow() || B.result) return;
+  const opts = [];
+  if (!y.cond.sanctuary && !f.cond.frozen) {
+    const w = effWeapon(y, y.weapon);
+    opts.push(["strike","Strike",`${esc(w.name)}: ${w.A} attacks`]);
+    opts.push(["arm","Aimed strike: arm","-1 to hit; limb hits take an arm"]);
+    opts.push(["leg","Aimed strike: leg","-1 to hit; limb hits take a leg"]);
+    if (y.smite && !B.smiteUsed) opts.push(["smite","Smite","Once per battle: every wound is Lethal"]);
+  }
+  if (y.book) for (const [sp, n] of Object.entries(y.book)) if (n && SPELLS[sp].touch) opts.push(["spell:"+sp, `Cast ${sp} (${n})`, SPELLS[sp].text]);
+  if (!opts.length) { log("You can't strike this round."); return; }
+  const c = await choose("Fight phase: how do you strike?", opts);
+  if (c.startsWith("spell:")) return castSpell(c.slice(6));
+  const w = effWeapon(y, y.weapon);
+  if (y.deathMark && B.charged === "you") { w.A += 2; log("<b>Death Mark:</b> +2 Attacks on the charge."); }
+  if (c === "smite") { B.smiteUsed = true; log("<b>Smite!</b>"); }
+  await attack(y, f, w, { melee:true, aimed: (c==="arm"||c==="leg") ? c : null, smite: c==="smite", chargeHit: W[y.weapon].chargeHit && B.charged });
+}
+async function fightFoe(){
+  const f = B.foe, y = B.you;
+  if (f.dead || f.cond.frozen || !engagedNow() || B.result) return;
+  if (y.cond.sanctuary) { log(`${esc(short(f))} can't break your Sanctuary.`); return; }
+  if (y.cond.frozen) return;
+  if (f.decree && !f.cond.decree) { f.decree = 0; f.cond.decree = true; log(`<b>Decree!</b> ${esc(short(f))} re-rolls every failed hit this round.`); }
+  await attack(f, y, effWeapon(f, f.weapon), { melee:true, chargeHit: W[f.weapon].chargeHit && B.charged });
+}
+
+async function endBattle(){
+  const y = B.you, spec = B.spec;
+  renderBattle();
+  if (B.result === "won") {
+    state.wins++;
+    if (spec.kind === "troop") {
+      const t = TROOPS[spec.ref.type], xp = t.xp || 4, coin = t.coin || 1;
+      spec.ref.alive = false; spec.ref.lives = null; if (spec.ref.respawn) spec.ref.deadAt = Date.now();
+      state.coins += coin;
+      const ups = gainXP(xp);
+      let msg = t.knight ? `You best ${esc(B.foe.name)}! Blackthorne's line wavers.` : t.elite ? `${esc(B.foe.name)} yields! The Guild's bounty is yours.` : `The ${esc(B.foe.name)} limps off to Nirvana${spec.ref.respawn ? "" : " for the rest of the day"}.`;
+      if (t.elite) state.bounties[spec.ref.type] = true;
+      msg += ` <b>+${xp} XP, +${coin} coin.</b>`;
+      if (ups.length) msg += `<br><b class="lvlup">${ups.map(esc).join("<br>")}</b>`;
+      await choose(msg, [["ok","Back to the field",""]]);
+      if (t.knight && btBested() === 4 && !state.crystalDone) {
+        state.crystalDone = true; state.coins += 40;
+        B = null; mode = "world"; save(); hud(); idlePanel();
+        say([
+          {who:"", text:"Across the grove, Blackthorne's horns sound the withdrawal. The crystals dim, one by one, until the grove is only a grove again."},
+          {who:"Border Warden Eda", text:`All four of their Knights, bested. The invasion's broken, ${state.you.name}. Westmarch owes you, and so does every park along this border.`},
+          {who:"Border Warden Eda", text:"By my authority on this border, I name you Warden of the Crystal Grove. Here: forty coin from the Crown's purse. Don't spend it all at Tamsin's."},
+        ], () => paragonCheck(ups));
+        return;
+      }
+      return finishWin(ups);
+    }
+    if (spec.kind === "duel") {
+      const name = B.foe.name; state.bested.push(name); state.coins += 10; state.duelKnight = null;
+      const ups = gainXP(30);
+      await choose(`You best ${esc(short(B.foe))} on the Field of Honor! <b>+30 XP, +10 coin.</b>${ups.length ? `<br><b class="lvlup">${ups.map(esc).join("<br>")}</b>` : ""}`, [["ok","Continue",""]]);
+      B = null; mode = "world"; save(); hud();
+      say([{who:short({name}), text:"Well fought. I'll remember that one."},{who:"Herald Brannoc", text:`Victory to ${state.you.name}! Knights bested: ${state.bested.length}.`}], () => paragonCheck(ups));
+      return;
+    }
+    state.bossLives = 0; state.bossHere = false; state.quest = 4; state.bested.push(state.bossName);
+    const ups = gainXP(20);
+    save();
+    await choose(`You held the field against ${esc(short(B.foe))}! <b>+20 XP.</b>${ups.length ? `<br><b class="lvlup">${ups.map(esc).join("<br>")}</b>` : ""}`, [["ok","Continue",""]]);
+    B = null; mode = "world"; hud();
+    const kname = state.bossName.split(",")[0];
+    say([{who:kname, text:"Good. You fight like someone who means it. Keep that banner flying."},{who:"Warmaster Holt", text:`You held the field against ${kname}. Word of that will reach the Crown. Welcome to the season.`}], showEnd);
+    return;
+  }
+  if (B.result === "fell") {
+    if (spec.kind === "duel") {
+      y.lives += 1; y.W = y.maxW; y.arm = y.leg = false; y.dead = false; y.damaged = false; state.duelKnight = null;
+      await choose(`${esc(short(B.foe))} wins the bout. A tourney loss costs you no life; the Herald's squires patch you up.`, [["ok","Leave the field",""]]);
+      state.x = 30; state.y = 33; state.face = "up";
+      B = null; mode = "world"; save(); hud(); idlePanel(); return;
+    }
+    if (spec.kind === "boss") state.bossLives = B.foe.lives;
+    if (spec.kind === "troop" && B.foe.elite) spec.ref.lives = Math.max(1, B.foe.lives);
+    if (y.lives <= 0) { B = null; mode = "end"; save(); return gameOver(); }
+    await choose(`You have ${y.lives} ${y.lives===1?"life":"lives"} left. You walk back to the Nirvana shrine.`, [["ok","Return to the fight",""]]);
+    y.W = y.maxW; y.arm = y.leg = false; y.dead = false;
+    state.x = state.shrine.x; state.y = state.shrine.y; state.face = "up";
+  }
+  B = null; mode = "world"; save(); hud(); idlePanel();
+}
+function finishWin(ups){
+  B = null; mode = "world"; save(); hud(); idlePanel();
+  paragonCheck(ups);
+}
+function paragonCheck(ups){
+  if (state.level >= 6 && state.quest < 5 && state.quest >= 4) {
+    state.quest = 5; save(); hud();
+    say([
+      {who:"", text:"Word reaches the waystation before you do. When you next pass Guildmaster Corwin, he's already written it in the book."},
+      {who:"Guildmaster Corwin", text:`${state.you.name}, sixth level ${state.you.cls}. By the Guild's book and the realm's custom, you are named Paragon.`},
+      {who:"Guildmaster Corwin", text:"The bounties still stand, and the Knights at the Field of Honor have heard your name. Go be a problem for them."},
+    ]);
+  }
+}
+
+/* ============================== battle UI ============================== */
+let resolver = null;
+function choose(prompt, opts, tiles){
+  if (!B) return Promise.resolve(opts[0][0]);
+  B.hl = tiles || [];
+  const box = $("#act");
+  box.innerHTML = `${prompt ? `<p class="prompt">${prompt}</p>` : ""}<div class="btns">${opts.map(([val, l, s], i) => `<button type="button" data-v="${esc(val)}" class="${i ? "ghost" : ""}">${l}${s ? `<small>${s}</small>` : ""}</button>`).join("")}</div>`;
+  box.querySelector("button")?.focus({ preventScroll:true });
+  return new Promise(res => { resolver = res; });
+}
+function resolve(val){ if (!resolver) return; const r = resolver; resolver = null; if (B) B.hl = []; const a = $("#act"); if (a) a.innerHTML = ""; r(val); }
+document.addEventListener("click", e => { const b = e.target.closest("#act button"); if (b) resolve(b.dataset.v); });
+function log(html, cls){ const l = $("#log"); if (!l || !html) return; const p = document.createElement("p"); if (cls) p.className = cls; p.innerHTML = html; l.prepend(p); }
+function fighterCard(m, color){
+  const sv = saveTarget(m, {AP:0}), w = effWeapon(m, m.weapon);
+  const chips = [m.arm&&"Arm lost", m.leg&&"Leg lost", m.damaged&&"Armor Damaged", m.cond.frozen&&"Frozen", (m.cond.pinned||m.cond.entangled)&&"Held", m.cond.heat&&"Hot weapon", m.dead&&"In Nirvana"].filter(Boolean).map(c => `<span class="chip">${c}</span>`).join("") +
+    [m.cond.stoneskin&&"Stoneskin", m.cond.sanctuary&&"Sanctuary", m.sig && (m.sig.id === "pin" ? (B && B.pinUsed ? m.sig.name + " spent" : m.sig.name + " ready") : m.sig.name)].filter(Boolean).map(c => `<span class="chip good">${c}</span>`).join("");
+  return `<div class="fighter" style="--oc:${color}"><b>${esc(m.side==="you" ? m.name : short(m))}</b>
+    <span>${m.side==="you" ? esc(title()) : m.knight ? ORDERS[m.order].name : m.fac==="hound" ? "Ashen Hound" : FACTION[m.fac][0] + (m.elite ? " · elite" : "")} · ${m.side==="you" && B && B.spec.kind==="duel" ? `tourney lives ${B.duelLives ?? 3}` : `lives ${m.lives}`}</span>
+    <div class="wbar"><i style="width:${Math.max(0,m.W)/m.maxW*100}%"></i></div>
+    <span>W ${Math.max(0,m.W)}/${m.maxW} · T${m.T} · Sv ${sv?sv+"+":"—"}${m.ward?" · Ward "+m.ward+"+":""}</span><br>
+    <span>${esc(w.name)} A${w.A} ${w.hit}+ S${w.S}${m.side==="you" && m.heroic ? ` · Heroic ${m.heroic}` : ""}</span><div>${chips}</div></div>`;
+}
+function renderBattle(){
+  if (!B) return;
+  const f = $("#fighters"); const r = $("#rnd"); if (r) r.textContent = `Round ${B.round} · 1 square = 2"`;
+  if (f) f.innerHTML = fighterCard(B.you, "#2b4970") + fighterCard(B.foe, B.foe.knight ? ORDER_COLOR[B.foe.order] : FACTION[B.foe.fac] ? FACTION[B.foe.fac][1] : "#7a4a2a");
+  hud();
+}
+function drawBattle(now){
+  px(0,0,256,176,"#10140f");
+  for (let y=0;y<GH;y++) for (let x=0;x<GW;x++) drawTile(bt(x,y), GOX+x*TS, GOY+y*TS, B.ox+x, B.oy+y);
+  cx.fillStyle = "rgba(0,0,0,.12)"; for (let y=0;y<=GH;y++) cx.fillRect(GOX, GOY+y*TS, GW*TS, 1); for (let x=0;x<=GW;x++) cx.fillRect(GOX+x*TS, GOY, 1, GH*TS);
+  for (const t of B.hl) {
+    cx.fillStyle = t.charge ? "rgba(200,40,40,.38)" : "rgba(80,140,230,.38)"; cx.fillRect(GOX+t.x*TS+1, GOY+t.y*TS+1, TS-2, TS-2);
+    cx.strokeStyle = t.charge ? "#ff6a6a" : "#bcd6ff"; cx.lineWidth = 1; cx.strokeRect(GOX+t.x*TS+1.5, GOY+t.y*TS+1.5, TS-3, TS-3);
+  }
+  const ents = [B.you, B.foe].filter(m => !m.dead).sort((a,b) => a.y - b.y);
+  for (const m of ents) {
+    const face = m === B.you ? (B.foe.x < B.you.x ? "left" : "right") : (B.you.x < B.foe.x ? "left" : "right");
+    if (m.cond.frozen) { px(GOX+m.x*TS, GOY+m.y*TS, TS, TS, "rgba(160,210,255,.5)"); }
+    drawMan(GOX+m.x*TS, GOY+m.y*TS, {...m.look, banner: m===B.you && state.hasBanner}, face, 0);
+    if (m === B.you) { cx.fillStyle = "#e8c868"; cx.fillRect(GOX+m.x*TS+6, GOY+m.y*TS-4, 4, 2); }
+  }
+  if (engagedNow()) { const mx = GOX + (B.you.x + B.foe.x)/2*TS + 4, my = GOY + (B.you.y + B.foe.y)/2*TS - 2; cx.strokeStyle="#fff"; cx.lineWidth=1.5; cx.beginPath(); cx.moveTo(mx,my); cx.lineTo(mx+8,my+8); cx.moveTo(mx+8,my); cx.lineTo(mx,my+8); cx.stroke(); }
+
+}
+function canvasTile(ev){
+  const r = cv.getBoundingClientRect(); const sx = (ev.clientX - r.left) / r.width * 256, sy = (ev.clientY - r.top) / r.height * 176;
+  return { x: Math.floor((sx - GOX)/TS), y: Math.floor((sy - GOY)/TS) };
+}
+
+/* ============================== screens ============================== */
+function setup(){
+  mode = "setup"; state = null; B = null; buildMap();
+  const saved = load();
+  const last = (store.get() || {}).cfg || {};
+  $("#app").innerHTML = `
+  <p style="max-width:44rem;margin:0 0 1rem">Chapter one: <b>The Stolen Banner</b>. The Ashen Hounds raided your park at dawn and carried off its banner. Cross the river, take it back, and hold the field when a Knight of Westmarch comes to test you. Then ride out into <b>the Marches</b>, an open country of rival warbands, and fight your way from level 1 to 6, Paragon. Explore in real time; fights play out on a battle grid with the Court of Blades rules.</p>
+  ${saved ? `<div class="card" style="margin-bottom:1rem"><p style="margin:0 0 .5rem"><b>${esc(saved.you.name)}</b>, ${saved.level >= 6 ? "Paragon" : "level " + saved.level} ${esc(saved.cfg.cls)}: ${esc(["just arrived","seeking the banner","carrying the banner home","facing the Knight","roaming the Marches","a Paragon of the Marches"][saved.quest]||"")}.</p><div class="btns"><button type="button" id="cont">Continue your season</button></div></div>` : ""}
+  <div class="setup">
+    <div class="card"><h2>Your fighter</h2>
+      <label class="field">Persona<input type="text" id="pname" maxlength="30" value="${esc(last.name || "")}" placeholder="Your Amtgard name"></label>
+      <label class="field">Class<select id="pcls">${Object.keys(CLASSES).map(c => `<option${last.cls===c?" selected":""}>${c}</option>`).join("")}</select></label>
+      <label class="field">Weapon<select id="pwpn"></select></label>
+      <label class="field">Armor<select id="parm"></select></label>
+      <p class="hint" id="ptext"></p>
+    </div>
+    <div class="card"><h2>The season</h2>
+      <label class="field">Difficulty<select id="pdiff"><option value="standard"${last.diff!=="story"?" selected":""}>Standard: the tabletop rules</option><option value="story"${last.diff==="story"?" selected":""}>Story: 7 lives, 6 W, 2 potions, 2 Heroic Actions</option></select></label>
+      <label class="field">The Knight who comes to test you<select id="kname"><option value="random">Surprise me (a fair Crown or Flame Knight)</option>${["sword","battle","crown","flame","serpent"].map(o => `<optgroup label="${ORDERS[o].name}">${KNIGHTS.filter(k=>k[0]===o).map(k=>`<option value="${esc(k[1])}"${last.knight===k[1]?" selected":""}>${esc(k[1])}</option>`).join("")}</optgroup>`).join("")}</select></label>
+      <p class="hint">Level 1: T4 · W5 · Ld8 · Heroic (+1 Attack, +1 to hit). Win fights to earn experience and climb to level 6, Paragon, unlocking class abilities at levels 3, 5 and 6. Damage carries between fights until a Healer patches you up. Fall in battle and you walk back to the last Nirvana shrine you touched.</p>
+    </div>
+  </div>
+  <p style="margin-top:1rem"><button type="button" id="go">Begin the season</button></p>`;
+  const sync = () => {
+    const c = CLASSES[$("#pcls").value]; const kw = $("#pwpn").value, ka = $("#parm").value;
+    $("#pwpn").innerHTML = c.weapons.map(w => `<option${(kw||last.weapon)===w?" selected":""}>${w}</option>`).join("");
+    $("#parm").innerHTML = c.armor.map(a => `<option${(ka||last.armor)===a?" selected":""}>${a}</option>`).join("");
+    $("#ptext").textContent = c.text;
+  };
+  $("#pcls").addEventListener("change", () => { $("#pwpn").value=""; $("#parm").value=""; sync(); });
+  sync();
+  $("#go").addEventListener("click", () => {
+    const cfg = { name: $("#pname").value.trim() || "Newcomer", cls: $("#pcls").value, weapon: $("#pwpn").value, armor: $("#parm").value, diff: $("#pdiff").value, knight: $("#kname").value };
+    state = newState(cfg); save(); play();
+    say([{who:"", text:`Dawn at your home park. Someone is shouting by the hall. Warmaster Holt is waving you over.`}]);
+  });
+  $("#cont")?.addEventListener("click", () => { state = saved; play(); });
+}
+function play(){
+  buildMap();
+  $("#app").innerHTML = `
+    <div class="hud" id="hud"></div>
+    <div class="screen"><canvas id="cv" width="256" height="176" tabindex="0" aria-label="Game map. Arrow keys move; Space interacts."></canvas></div>
+    <div class="pad" aria-hidden="false">
+      <div class="dpad"><button type="button" class="u" data-d="up" aria-label="Up">▲</button><button type="button" class="l" data-d="left" aria-label="Left">◀</button><button type="button" class="r" data-d="right" aria-label="Right">▶</button><button type="button" class="dn" data-d="down" aria-label="Down">▼</button></div>
+      <span class="keys">Arrows or WASD to move · Space or Enter to act · tap tiles in battle</span>
+      <button type="button" class="abtn" id="abtn" aria-label="Act">A</button>
+    </div>
+    <div class="panel" id="panel"></div>
+    <p class="hint btns" style="margin-top:.8rem"><button type="button" class="ghost" id="sheetbtn">Character and map</button><button type="button" class="ghost" id="menu">Save and leave</button></p>`;
+  cv = $("#cv"); cx = cv.getContext("2d"); cx.imageSmoothingEnabled = false;
+  mode = "world"; idlePanel(); hud();
+  cv.addEventListener("pointerdown", ev => {
+    if (mode === "battle" && B && B.hl.length) { const t = canvasTile(ev); if (B.hl.some(h => h.x===t.x && h.y===t.y)) resolve(`tile:${t.x},${t.y}`); }
+    else cv.focus({preventScroll:true});
+  });
+  document.querySelectorAll(".dpad button").forEach(b => {
+    const d = b.dataset.d;
+    b.addEventListener("pointerdown", e => { e.preventDefault(); held.add(d); });
+    ["pointerup","pointerleave","pointercancel"].forEach(t => b.addEventListener(t, () => held.delete(d)));
+  });
+  $("#abtn").addEventListener("click", () => interact());
+  $("#menu").addEventListener("click", () => { save(); setup(); });
+  $("#sheetbtn").addEventListener("click", () => mode === "sheet" ? closeSheet() : openSheet());
+  requestAnimationFrame(loop);
+}
+function gameOver(){
+  $("#panel").innerHTML = `<div class="card end"><h2>The day is done</h2><p>You've spent every life for today. Your progress is kept: dead Hounds stay beaten and the banner stays where you left it.</p><div class="btns" style="justify-content:center"><button type="button" id="again">Start a new day</button><button type="button" class="ghost" id="tomenu">Main menu</button></div></div>`;
+  $("#again").addEventListener("click", () => { const y = state.you; y.lives = y.maxLives; y.W = y.maxW; y.arm = y.leg = false; state.x = state.shrine.x; state.y = state.shrine.y; respawnAll(); mode = "world"; save(); hud(); idlePanel(); });
+  $("#tomenu").addEventListener("click", setup);
+}
+function showEnd(){
+  mode = "end"; save();
+  const mins = Math.max(1, Math.round((Date.now() - state.started) / 60000));
+  $("#panel").innerHTML = `<div class="card end"><p class="kicker">Chapter one complete</p><h2>The Banner Holds</h2>
+    <p>${esc(state.you.name)}, Paragon ${esc(state.you.cls)}: ${state.wins} battle${state.wins===1?"":"s"} won, ${state.you.lives} of ${state.you.maxLives} lives left, about ${mins} minute${mins===1?"":"s"} on the field.</p>
+    <p>Holt has unbarred the east gate. Beyond it lie the Marches: brigands, a rival park, a ruined keep, and a tourney field where Knights of the realm take challenges. Every win earns experience toward level 6, Paragon.</p>
+    <div class="btns" style="justify-content:center"><button type="button" id="ride">Ride into the Marches</button><button type="button" class="ghost" id="newgame">Start a new season</button></div></div>`;
+  $("#ride").addEventListener("click", () => { mode = "world"; save(); hud(); idlePanel(); cv.focus({preventScroll:true}); });
+  $("#newgame").addEventListener("click", () => { store.clear(); setup(); });
+}
+
+/* ============================== input ============================== */
+const KEYMAP = {ArrowUp:"up",KeyW:"up",ArrowDown:"down",KeyS:"down",ArrowLeft:"left",KeyA:"left",ArrowRight:"right",KeyD:"right"};
+document.addEventListener("keydown", e => {
+  if (!state || ["INPUT","SELECT","TEXTAREA"].includes(e.target.tagName)) return;
+  if (KEYMAP[e.code] && (mode === "world")) { held.add(KEYMAP[e.code]); e.preventDefault(); }
+  if ((e.code === "Space" || e.code === "Enter" || e.code === "KeyE") && (mode === "world" || mode === "dialog" || mode === "sheet")) {
+    if (e.target.tagName === "BUTTON" && mode === "sheet") return;
+    if (e.target.tagName === "BUTTON" && mode === "dialog") return; // the focused Continue button handles it
+    e.preventDefault(); interact();
+  }
+});
+document.addEventListener("keydown", e => {
+  if (!state || ["INPUT","SELECT","TEXTAREA"].includes(e.target.tagName)) return;
+  if (e.code === "KeyC" || e.code === "KeyM") { if (mode === "world") openSheet(); else if (mode === "sheet") closeSheet(); }
+  if (e.code === "Escape" && mode === "sheet") closeSheet();
+});
+document.addEventListener("keyup", e => { if (KEYMAP[e.code]) held.delete(KEYMAP[e.code]); });
+window.addEventListener("blur", () => held.clear());
+
+if (window.__COB_TEST) window.__cob = { get state(){ return state; }, get mode(){ return mode; }, get B(){ return B; },
+  tp(x,y,face){ state.x=x; state.y=y; state.face=face; state.lr = face==="left"?"left":"right"; }, interact, startBattle, map, tileAt, walkable, gainXP, openSheet, NPCS, SHRINES, checkAggro, resolve, castSpell, resonant, get map2(){ return map; }, set mode(v){ mode = v; } };
+setup();
+})();
+</script>
+
+</body>
+</html>
