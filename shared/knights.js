@@ -56,7 +56,18 @@ export default [
   "order": "crown",
   "park": "Siar Geata",
   "belted": 2001,
-  "orkId": 4098
+  "orkId": 4098,
+  "signature": {
+   "name": "That WAS Your Flank",
+   "cry": "CORSAIRS!!!",
+   "quote": "CORSAIRS!!!",
+   "when": "Once per game, at the start of his activation",
+   "loadout": "Dual Short (florentine)",
+   "rules": [
+    "Downfall and up to 3 friendly troops within 3\" of him activate together this round.",
+    "Backstabs are inevitable: until the end of the round, their melee attacks against an enemy that is already engaged with another friendly model are +1 to hit, and wound rolls of 5+ are Lethal."
+   ]
+  }
  },
  {
   "slug": "scoot",
@@ -148,7 +159,18 @@ export default [
   "order": "flame",
   "park": "Wavehaven",
   "belted": 2018,
-  "orkId": 21690
+  "orkId": 21690,
+  "signature": {
+   "name": "I Know This One...",
+   "cry": "What team am I on??",
+   "quote": "What team am I on??",
+   "when": "Reaction, once per round",
+   "loadout": "Dual Short (florentine)",
+   "rules": [
+    "When an enemy within 12\" of Fiks uses a spell, a Heroic Action, a class ability or a signature ability that targets or affects a friendly model, Fiks rolls a D6.",
+    "On a 4+, he knows exactly how to react: it has no effect on that friendly model. Spells and uses spent on it stay spent."
+   ]
+  }
  },
  {
   "slug": "sir-kismet",
@@ -198,7 +220,17 @@ export default [
   "order": "flame",
   "park": "Dragonvale",
   "belted": 2026,
-  "orkId": 20579
+  "orkId": 20579,
+  "signature": {
+   "name": "Commanding Rush",
+   "cry": "I've got a really good idea.",
+   "quote": "I've got a really good idea.",
+   "when": "Reaction, once per round",
+   "rules": [
+    "When a friendly model within 6\" of Milan attacks an exposed enemy (one with Damaged armor or a lost limb), Milan may call the rush.",
+    "That attack gets +1 S, and its wound rolls of 5+ are Lethal."
+   ]
+  }
  },
  {
   "slug": "sir-rose-thorn",

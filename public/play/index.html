@@ -407,6 +407,12 @@ function makeTroop(type){
 const SIGS = {
   "Sir Rose Thorn 가시 장미": { id:"pin", name:"Pinning Arrow", quote:"I said stop moving.", weapon:"Single Short", bow:true,
     text:"Reaction, once per round: when a foe charges, she looses a Pinning Arrow (5+ to hit, 6 into cover). On a hit the charge stops dead. It costs her next shot." },
+  "Downfall": { id:"flank", name:"That WAS Your Flank", quote:"CORSAIRS!!!", weapon:"Dual Short",
+    text:"Once per duel, when he charges you: that round his strikes are +1 to hit, and wound rolls of 5+ are Lethal." },
+  "Milan of Amber": { id:"rush", name:"Commanding Rush", quote:"I've got a really good idea.",
+    text:"Reaction, once per round: if your armor is Damaged or you've lost a limb, his next strike hits the opening at +1 Strength, with wound rolls of 5+ Lethal." },
+  "Fiks von Grunwald": { id:"know", name:"I Know This One...", quote:"What team am I on??", weapon:"Dual Short",
+    text:"Reaction, once per round: when you cast a spell at him or spend a Heroic Action, he rolls a D6. On a 4+ it has no effect, and it stays spent." },
   "Azus": { id:"confuse", name:"Confusion", quote:"Derp.", weapon:"Single Short", bow:true,
     text:"Once per round, when he activates: you test Leadership or get Confused (-1 to hit, no charging) this round. On a roll of 1 he confuses himself instead, and says \"Derp.\" after the fact." },
   "Scoot": { id:"support", name:"Close Arrow Support", quote:"This is a team effort: don't fight alone.", weapon:"Single Short", bow:true,
@@ -925,6 +931,15 @@ async function attack(att, def, wpn, opts = {}){
   if (opts.cover) mods -= 1;
   if (opts.melee && def.terror) mods -= 1;
   if (att.cond.confused || att.cond.derp) mods -= 1;
+  let flank = false;
+  if (opts.melee && att.sig && att.sig.id === "flank" && B.charged === att.side && (!B.flankUsed || B.flankRound === B.round)) {
+    if (!B.flankUsed) { B.flankUsed = true; B.flankRound = B.round; log(`<b>That WAS Your Flank:</b> <b>"${esc(att.sig.quote)}"</b> ${esc(short(att))} hits you from the side. +1 to hit, and wound rolls of 5+ are Lethal this round.`); }
+    flank = true;
+  }
+  if (opts.melee && att.sig && att.sig.id === "rush" && !B.rushUsed && (def.damaged || def.arm || def.leg)) {
+    B.rushUsed = true; wpn = { ...wpn, S: wpn.S + 1 }; opts = { ...opts, rush: true };
+    log(`<b>Commanding Rush:</b> <b>"${esc(att.sig.quote)}"</b> ${esc(short(att))} spots the opening ${def.damaged ? "in your damaged armor" : "where your guard is down"} and drives into it: +1 Strength, wound rolls of 5+ Lethal.`);
+  }
   const reach = opts.melee && def.sig && def.sig.id === "reach" && B.charged !== att.side;
   if (reach) mods -= 1;
   const shadowed = att.side === "you" && B.shadow && cheb(att, B.shadow) <= 1;
@@ -932,6 +947,7 @@ async function attack(att, def, wpn, opts = {}){
   if (att.side === "foe" && B.youBroken) {}
   mods = Math.max(-2, mods);
   if (opts.chargeHit) mods += 1;
+  if (flank) { mods += 1; opts = { ...opts, flank: true }; }
   const target = Math.min(6, Math.max(2, wpn.hit - mods));
   let hits;
   if (opts.spell) hits = 1;
@@ -957,7 +973,7 @@ async function attack(att, def, wpn, opts = {}){
   log(`To wound (S${wpn.S} vs T${def.T}): ${dice(wr, wNeed, true)} needs ${wNeed}+, <b>${wounds.length} wound${wounds.length===1?"":"s"}</b>.`);
   for (const r of wounds) {
     if (def.dead) break;
-    const lethal = r === 6 || wpn.D >= 2 || opts.smite || (opts.support && r >= 5) || (opts.melee && att.lethal && r >= att.lethal) || (wpn.name === "Bow" && att.deadeye && r >= 5);
+    const lethal = r === 6 || wpn.D >= 2 || opts.smite || (opts.support && r >= 5) || (opts.flank && r >= 5) || (opts.rush && r >= 5) || (opts.melee && att.lethal && r >= att.lethal) || (wpn.name === "Bow" && att.deadeye && r >= 5);
     const sv = opts.phase ? null : saveTarget(def, wpn);
     if (sv != null) {
       let s = d6(), ok = s !== 1 && s >= sv;
@@ -1054,7 +1070,7 @@ async function startBattle(spec){
 }
 async function battleRound(){
   const y = B.you, f = B.foe;
-  B.round++; B.shadow = null; B.supportUsed = false; B.doubtUsed = false; B.confuseUsed = false; B.guileUsed = false; B.bmUsed = false; B.pinUsed = false; B.pinSpent = false; B.arrowUsed = false; B.healUsed = false; B.charged = null; B.uphill = null; y.cond.fellBack = false; f.cond.fellBack = false;
+  B.round++; B.shadow = null; B.supportUsed = false; B.doubtUsed = false; B.confuseUsed = false; B.rushUsed = false; B.knowUsed = false; B.guileUsed = false; B.bmUsed = false; B.pinUsed = false; B.pinSpent = false; B.arrowUsed = false; B.healUsed = false; B.charged = null; B.uphill = null; y.cond.fellBack = false; f.cond.fellBack = false;
   log(`Round ${B.round}`, "phase");
   knightReturns();
   if (f.sig && f.sig.id === "boo" && !f.dead && B.round % 2 === 1 && (f.W < f.maxW || f.arm || f.leg)) { restore(f, 1); log(`<b>Mother Kisses the Boo-Boos:</b> ${esc(short(f))} patches herself up.`); }
@@ -1066,7 +1082,7 @@ async function battleRound(){
   let first = pri;
   if (pri === "foe" && y.heroic && !y.cond.frozen) {
     const h = await choose(`${esc(short(f))} moves first. Spend a Heroic Action to move first?`, [["yes","Heroic Action",`Act first this phase (${y.heroic} left)`],["no","Let them move",""]]);
-    if (h === "yes") { y.heroic--; first = "you"; log("<b>Heroic Action!</b> You seize the moment."); }
+    if (h === "yes") { y.heroic--; if (fiksKnows("Heroic Action")) {} else { first = "you"; log("<b>Heroic Action!</b> You seize the moment."); } }
   }
   await order(first, moveYou, moveFoe); renderBattle(); if (B.result) return;
   await shootYou(); renderBattle(); if (B.result) return;
@@ -1076,7 +1092,7 @@ async function battleRound(){
     if (fFirst === "you" && f.heroic && f.knight && !B.charged && Math.random() < .6) { f.heroic--; fFirst = "foe"; log(`<b>Heroic Action!</b> ${esc(short(f))} strikes first.`); }
     else if (fFirst === "foe" && y.heroic) {
       const h = await choose(`${esc(short(f))} strikes first. Spend a Heroic Action to strike first?`, [["yes","Heroic Action",`Strike first (${y.heroic} left)`],["no","Take the blow",""]]);
-      if (h === "yes") { y.heroic--; fFirst = "you"; log("<b>Heroic Action!</b> You strike first."); }
+      if (h === "yes") { y.heroic--; if (fiksKnows("Heroic Action")) {} else { fFirst = "you"; log("<b>Heroic Action!</b> You strike first."); } }
     }
     if (B.uphill) log(`Charging uphill, ${B.uphill==="you"?"you lose":"the foe loses"} the first strike.`);
     await order(fFirst, fightYou, fightFoe); renderBattle(); if (B.result) return;
@@ -1145,6 +1161,16 @@ async function pinningArrow(y, f, dest){
   if (!hit) { log("The arrow whistles past. You keep coming."); renderBattle(); return false; }
   log(`<b>"${esc(f.sig.quote)}"</b> The arrow pins you in place. Your charge stops dead.`, "big");
   renderBattle(); return true;
+}
+// Fiks von Grunwald's signature: he knows this one.
+function fiksKnows(what){
+  const f = B.foe;
+  if (!f.sig || f.sig.id !== "know" || f.dead || f.cond.frozen || B.knowUsed) return false;
+  B.knowUsed = true;
+  const r = d6(), ok = r >= 4;
+  log(`<b>I Know This One...:</b> ${esc(short(f))} sees your ${what} coming: ${dice([r], 4)} needs 4+. ${ok ? `<b>"${esc(f.sig.quote)}"</b> He knows exactly what to do. It has no effect, and it stays spent.` : "Not this time."}`);
+  renderBattle();
+  return ok;
 }
 // Azus's signature: confuse the foe, or on a 1, himself.
 function confusion(f, y){
@@ -1263,6 +1289,7 @@ async function castSpell(name, los){
   if (r === 1) { y.book[name]--; log(`You cast ${name}: ${dice([r])} <b>fizzle!</b>`); return; }
   if (r < need) { log(`You cast ${name}: ${dice([r], need)} needs ${need}+. Nothing happens; you keep the spell.`); return; }
   y.book[name]--; log(`You cast <b>${name}</b>: ${dice([r], need)} success!`);
+  if (s.type !== "self" && fiksKnows(name)) return;
   if (name === "Lightning Bolt") await attack(y, f, {name:"Lightning Bolt", ...s.profile, hit:2}, {spell:true});
   if (name === "Iceball") { f.cond.frozen = 2; log(`${esc(short(f))} is encased in ice.`); }
   if (name === "Teleport") { let best=null; for (let yy=0;yy<GH;yy++) for (let xx=0;xx<GW;xx++) if (open(xx,yy) && !(xx===f.x&&yy===f.y)) { const d=cheb({x:xx,y:yy},f); if(!best||d>best.d) best={x:xx,y:yy,d}; } y.x=best.x; y.y=best.y; log("You vanish and reappear across the field."); }
